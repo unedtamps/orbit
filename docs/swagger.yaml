@@ -1,0 +1,170 @@
+basePath: /
+definitions:
+  jackett.Result:
+    properties:
+      album:
+        type: string
+      artist:
+        type: string
+      author:
+        type: string
+      backdrop_url:
+        type: string
+      book_title:
+        type: string
+      categories:
+        items:
+          type: integer
+        type: array
+      cover_url:
+        type: string
+      description:
+        type: string
+      douban_id:
+        type: integer
+      download_volume_factor:
+        type: number
+      episode:
+        type: integer
+      files:
+        type: integer
+      genres:
+        items:
+          type: string
+        type: array
+      grabs:
+        type: integer
+      id:
+        type: string
+      imdb_id:
+        type: string
+      info_hash:
+        type: string
+      languages:
+        items:
+          type: string
+        type: array
+      link:
+        type: string
+      magnet_uri:
+        type: string
+      minimum_ratio:
+        type: number
+      minimum_seed_time:
+        type: integer
+      pages:
+        type: integer
+      peers:
+        type: integer
+      publish_date:
+        type: string
+      publisher:
+        type: string
+      season:
+        type: integer
+      seeders:
+        type: integer
+      size:
+        type: integer
+      subs:
+        items:
+          type: string
+        type: array
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      tmdb_id:
+        type: integer
+      tracker:
+        type: string
+      tracker_id:
+        type: string
+      tracker_type:
+        type: string
+      tracks:
+        items:
+          type: string
+        type: array
+      trakt_id:
+        type: integer
+      tv_maze_id:
+        type: integer
+      tvdb_id:
+        type: string
+      upload_volume_factor:
+        type: number
+    type: object
+info:
+  contact:
+    email: 0A2j9@example.com
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "2.0"
+paths:
+  /books/{query}:
+    get:
+      description: Get Books
+      parameters:
+      - description: query
+        in: path
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jackett.Result'
+      summary: Get Books
+      tags:
+      - books
+  /movies/{query}:
+    get:
+      description: Get Movies
+      parameters:
+      - description: query
+        in: path
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jackett.Result'
+      summary: Get Movies
+      tags:
+      - movies
+  /tv/{query}:
+    get:
+      description: Get TV by query
+      parameters:
+      - description: query
+        in: path
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jackett.Result'
+      summary: Get TV
+      tags:
+      - tv
+swagger: "2.0"

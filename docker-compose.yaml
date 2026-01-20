@@ -1,0 +1,37 @@
+services:
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Jakarta
+      - DOTNET_SYSTEM_NET_DISABLEIPV6=1
+    volumes:
+      - ./config:/config
+      - ./downloads:/downloads
+    ports:
+      - "9117:9117"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    restart: unless-stopped
+    networks:
+      - jackett-net
+
+  api:
+    build: .
+    container_name: api
+    env_file:
+      - .env
+    ports:
+      - "9999:9999"
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    restart: unless-stopped
+    networks:
+      - jackett-net
+networks:
+  jackett-net:
+    driver: bridge

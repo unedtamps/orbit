@@ -1,0 +1,256 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server celler server.",
+        "title": "Swagger Example API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "0A2j9@example.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "2.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/books/{query}": {
+            "get": {
+                "description": "Get Books",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "books"
+                ],
+                "summary": "Get Books",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query",
+                        "name": "query",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jackett.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/movies/{query}": {
+            "get": {
+                "description": "Get Movies",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Get Movies",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query",
+                        "name": "query",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jackett.Result"
+                        }
+                    }
+                }
+            }
+        },
+        "/tv/{query}": {
+            "get": {
+                "description": "Get TV by query",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tv"
+                ],
+                "summary": "Get TV",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "query",
+                        "name": "query",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jackett.Result"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "jackett.Result": {
+            "type": "object",
+            "properties": {
+                "album": {
+                    "type": "string"
+                },
+                "artist": {
+                    "type": "string"
+                },
+                "author": {
+                    "type": "string"
+                },
+                "backdrop_url": {
+                    "type": "string"
+                },
+                "book_title": {
+                    "type": "string"
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "cover_url": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "douban_id": {
+                    "type": "integer"
+                },
+                "download_volume_factor": {
+                    "type": "number"
+                },
+                "episode": {
+                    "type": "integer"
+                },
+                "files": {
+                    "type": "integer"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "grabs": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "imdb_id": {
+                    "type": "string"
+                },
+                "info_hash": {
+                    "type": "string"
+                },
+                "languages": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "link": {
+                    "type": "string"
+                },
+                "magnet_uri": {
+                    "type": "string"
+                },
+                "minimum_ratio": {
+                    "type": "number"
+                },
+                "minimum_seed_time": {
+                    "type": "integer"
+                },
+                "pages": {
+                    "type": "integer"
+                },
+                "peers": {
+                    "type": "integer"
+                },
+                "publish_date": {
+                    "type": "string"
+                },
+                "publisher": {
+                    "type": "string"
+                },
+                "season": {
+                    "type": "integer"
+                },
+                "seeders": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "subs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "tmdb_id": {
+                    "type": "integer"
+                },
+                "tracker": {
+                    "type": "string"
+                },
+                "tracker_id": {
+                    "type": "string"
+                },
+                "tracker_type": {
+                    "type": "string"
+                },
+                "tracks": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "trakt_id": {
+                    "type": "integer"
+                },
+                "tv_maze_id": {
+                    "type": "integer"
+                },
+                "tvdb_id": {
+                    "type": "string"
+                },
+                "upload_volume_factor": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}
