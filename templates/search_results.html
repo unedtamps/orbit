@@ -1,0 +1,429 @@
+{{if .Error}}
+<div class="orbit-error" x-data>
+    <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <p>{{.Error}}</p>
+</div>
+{{else}}
+<div 
+    x-data="searchFilters({{json .Results}})"
+    x-init="initTrackers()"
+    class="results-container">
+    
+    <div class="orbit-results-header">
+        <div class="results-info">
+            <h2>{{.CategoryTitle}}</h2>
+            <span class="search-term">"{{.Query}}"</span>
+        </div>
+        <div class="results-count">
+            <span class="count-number" x-text="filteredCount"></span>
+            <span class="count-label">of {{.Count}} results</span>
+        </div>
+    </div>
+
+    {{if gt .Count 0}}
+    <!-- Filter Bar with Alpine.js -->
+    <div class="orbit-filter-bar">
+        <!-- Sort -->
+        <div class="filter-group">
+            <label><i class="fas fa-sort"></i> Sort by</label>
+            <select x-model="sortBy" @change="applySort()">
+                <option value="seeders-desc">Seeders (High → Low)</option>
+                <option value="seeders-asc">Seeders (Low → High)</option>
+                <option value="date-desc">Date (Newest)</option>
+                <option value="date-asc">Date (Oldest)</option>
+            </select>
+        </div>
+        
+        <!-- Tracker Filter -->
+        <div class="filter-group">
+            <label><i class="fas fa-satellite-dish"></i> Tracker</label>
+            <select x-model="trackerFilter">
+                <option value="">All Trackers</option>
+                <template x-for="tracker in trackers" :key="tracker">
+                    <option :value="tracker" x-text="tracker"></option>
+                </template>
+            </select>
+        </div>
+        
+        <!-- Size Filter -->
+        <div class="filter-group">
+            <label><i class="fas fa-database"></i> Size</label>
+            <select x-model="sizeFilter">
+                <option value="">Any Size</option>
+                <option value="small">Small (< 500 MB)</option>
+                <option value="medium">Medium (500 MB - 5 GB)</option>
+                <option value="large">Large (> 5 GB)</option>
+            </select>
+        </div>
+        
+        <!-- Quality Filter -->
+        <div class="filter-group">
+            <label><i class="fas fa-tv"></i> Quality</label>
+            <select x-model="qualityFilter">
+                <option value="">Any Quality</option>
+                <option value="4k">4K / 2160p / UHD</option>
+                <option value="1080p">1080p / BluRay</option>
+                <option value="720p">720p</option>
+                <option value="web">WEB-DL / WEBRip</option>
+                <option value="hdtv">HDTV</option>
+                <option value="dvd">DVD / DVDRip</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+        
+        <!-- Search in Results -->
+        <div class="filter-group search-group">
+            <label><i class="fas fa-search"></i> Filter Results</label>
+            <div class="filter-search-box">
+                <input 
+                    type="text" 
+                    x-model="searchQuery"
+                    placeholder="Search in results..." 
+                    autocomplete="off">
+                <button @click="clearFilters()" class="clear-btn" title="Clear filters">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Active Filters -->
+        <div class="active-filters" x-show="hasActiveFilters()">
+            <template x-if="trackerFilter">
+                <span class="filter-tag">
+                    <i class="fas fa-satellite"></i> <span x-text="trackerFilter"></span>
+                    <button @click="trackerFilter = ''"><i class="fas fa-times"></i></button>
+                </span>
+            </template>
+            <template x-if="sizeFilter">
+                <span class="filter-tag">
+                    <i class="fas fa-database"></i> 
+                    <span x-text="sizeLabel(sizeFilter)"></span>
+                    <button @click="sizeFilter = ''"><i class="fas fa-times"></i></button>
+                </span>
+            </template>
+            <template x-if="qualityFilter">
+                <span class="filter-tag">
+                    <i class="fas fa-tv"></i> 
+                    <span x-text="qualityLabel(qualityFilter)"></span>
+                    <button @click="qualityFilter = ''"><i class="fas fa-times"></i></button>
+                </span>
+            </template>
+            <template x-if="searchQuery">
+                <span class="filter-tag">
+                    <i class="fas fa-search"></i> "<span x-text="searchQuery"></span>"
+                    <button @click="searchQuery = ''"><i class="fas fa-times"></i></button>
+                </span>
+            </template>
+        </div>
+    </div>
+    {{end}}
+
+    {{if eq .Count 0}}
+    <div class="orbit-empty">
+        <div class="empty-illustration">
+            <i class="fas fa-search"></i>
+        </div>
+        <h3>No signals detected</h3>
+        <p>Try adjusting your search parameters or check your spelling</p>
+    </div>
+    {{else}}
+    
+    <!-- Results Grid -->
+    <div class="orbit-grid">
+        <template x-for="(item, index) in filteredResults" :key="index">
+            <article class="orbit-card" x-show="true" x-transition>
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="meta-badges">
+                            <span class="orbit-badge" 
+                                  :class="'cat-' + categoryClass(item.categories)"
+                                  x-text="categoryName(item.categories)">
+                            </span>
+                            <span class="orbit-badge quality-badge" 
+                                  :class="'quality-' + detectQuality(item.title)"
+                                  x-text="qualityDisplay(item.title)">
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="card-title" :title="item.title" x-text="item.title"></h3>
+                    
+                    <div class="card-stats">
+                        <div class="stat">
+                            <i class="fas fa-database"></i>
+                            <span x-text="formatSize(item.size)"></span>
+                        </div>
+                        <div class="stat seeders">
+                            <i class="fas fa-arrow-up"></i>
+                            <span x-text="item.seeders"></span>
+                        </div>
+                        <div class="stat leechers">
+                            <i class="fas fa-arrow-down"></i>
+                            <span x-text="item.peers - item.seeders"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-meta">
+                        <span class="source">
+                            <i class="fas fa-satellite-dish"></i> 
+                            <span x-text="item.tracker"></span>
+                        </span>
+                        <span class="date" x-text="formatDate(item.publish_date)"></span>
+                    </div>
+                    
+                    <div class="card-actions">
+                        <template x-if="item.magnet_uri">
+                            <a :href="item.magnet_uri" class="orbit-btn-primary magnetic">
+                                <i class="fas fa-magnet"></i>
+                                <span>Magnet</span>
+                            </a>
+                        </template>
+                        <template x-if="item.link">
+                            <a :href="item.link" class="orbit-btn-secondary" target="_blank">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </template>
+                    </div>
+                </div>
+            </article>
+        </template>
+    </div>
+
+    <!-- No Filtered Results -->
+    <div class="no-filtered-results" x-show="filteredCount === 0" x-transition>
+        <div class="empty-illustration">
+            <i class="fas fa-filter"></i>
+        </div>
+        <h3>No results match your filters</h3>
+        <p>Try adjusting or clearing your filter criteria</p>
+        <button @click="clearFilters()" class="orbit-btn-primary">
+            <i class="fas fa-times-circle"></i> Clear All Filters
+        </button>
+    </div>
+    {{end}}
+</div>
+
+<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<script>
+function searchFilters(results) {
+    // Size limits in bytes
+    const SIZE_LIMITS = {
+        small: { max: 524288000 },           // < 500 MB
+        medium: { min: 524288000, max: 5368709120 },  // 500 MB - 5 GB
+        large: { min: 5368709120 }           // > 5 GB
+    };
+    
+    // Quality detection patterns
+    const QUALITY_PATTERNS = {
+        '4k': ['2160p', '4k', 'uhd', 'ultra hd', 'ultrahd'],
+        '1080p': ['1080p', 'bluray', 'blu-ray', 'bdrip', 'brrip', 'fullhd'],
+        '720p': ['720p', 'hdrip'],
+        'web': ['web-dl', 'webdl', 'webrip', 'web'],
+        'hdtv': ['hdtv', 'hd-tv', 'pdtv'],
+        'dvd': ['dvd', 'dvdrip', 'dvdr', 'r5', 'r6']
+    };
+    
+    return {
+        allResults: results,
+        filteredResults: [...results],
+        filteredCount: results.length,
+        sortBy: 'seeders-desc',
+        trackerFilter: '',
+        sizeFilter: '',
+        qualityFilter: '',
+        searchQuery: '',
+        trackers: [],
+        
+        initTrackers() {
+            // Extract unique trackers
+            const trackerSet = new Set(this.allResults.map(r => r.tracker).filter(Boolean));
+            this.trackers = [...trackerSet].sort();
+            
+            // Watch for filter changes
+            this.$watch('sortBy', () => this.applySort());
+            this.$watch('trackerFilter', () => this.applyFilters());
+            this.$watch('sizeFilter', () => this.applyFilters());
+            this.$watch('qualityFilter', () => this.applyFilters());
+            this.$watch('searchQuery', () => this.applyFilters());
+            
+            // Initial sort
+            this.applySort();
+        },
+        
+        detectQuality(title) {
+            if (!title) return 'other';
+            const lower = title.toLowerCase();
+            
+            for (const [quality, patterns] of Object.entries(QUALITY_PATTERNS)) {
+                for (const pattern of patterns) {
+                    if (lower.includes(pattern)) {
+                        return quality;
+                    }
+                }
+            }
+            return 'other';
+        },
+        
+        qualityDisplay(title) {
+            const quality = this.detectQuality(title);
+            const displayMap = {
+                '4k': '4K',
+                '1080p': '1080p',
+                '720p': '720p',
+                'web': 'WEB',
+                'hdtv': 'HDTV',
+                'dvd': 'DVD',
+                'other': '—'
+            };
+            return displayMap[quality] || '—';
+        },
+        
+        applyFilters() {
+            let filtered = [...this.allResults];
+            
+            // Filter by tracker
+            if (this.trackerFilter) {
+                filtered = filtered.filter(r => r.tracker === this.trackerFilter);
+            }
+            
+            // Filter by size
+            if (this.sizeFilter && SIZE_LIMITS[this.sizeFilter]) {
+                const limits = SIZE_LIMITS[this.sizeFilter];
+                filtered = filtered.filter(r => {
+                    const size = r.size || 0;
+                    if (limits.min && limits.max) {
+                        return size >= limits.min && size <= limits.max;
+                    } else if (limits.min) {
+                        return size >= limits.min;
+                    } else if (limits.max) {
+                        return size < limits.max;
+                    }
+                    return true;
+                });
+            }
+            
+            // Filter by quality
+            if (this.qualityFilter) {
+                filtered = filtered.filter(r => {
+                    const itemQuality = this.detectQuality(r.title);
+                    return itemQuality === this.qualityFilter;
+                });
+            }
+            
+            // Filter by search query
+            if (this.searchQuery) {
+                const query = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(r => r.title.toLowerCase().includes(query));
+            }
+            
+            this.filteredResults = filtered;
+            this.filteredCount = filtered.length;
+            this.applySort();
+        },
+        
+        applySort() {
+            const [field, direction] = this.sortBy.split('-');
+            
+            this.filteredResults.sort((a, b) => {
+                let valA, valB;
+                
+                switch(field) {
+                    case 'seeders':
+                        valA = a.seeders || 0;
+                        valB = b.seeders || 0;
+                        break;
+                    case 'date':
+                        valA = new Date(a.publish_date).getTime();
+                        valB = new Date(b.publish_date).getTime();
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                return direction === 'asc' ? valA - valB : valB - valA;
+            });
+        },
+        
+        clearFilters() {
+            this.sortBy = 'seeders-desc';
+            this.trackerFilter = '';
+            this.sizeFilter = '';
+            this.qualityFilter = '';
+            this.searchQuery = '';
+        },
+        
+        hasActiveFilters() {
+            return this.trackerFilter || this.sizeFilter || this.qualityFilter || this.searchQuery;
+        },
+        
+        sizeLabel(filter) {
+            const labels = {
+                small: '< 500 MB',
+                medium: '500 MB - 5 GB',
+                large: '> 5 GB'
+            };
+            return labels[filter] || filter;
+        },
+        
+        qualityLabel(filter) {
+            const labels = {
+                '4k': '4K / UHD',
+                '1080p': '1080p',
+                '720p': '720p',
+                'web': 'WEB',
+                'hdtv': 'HDTV',
+                'dvd': 'DVD',
+                'other': 'Other'
+            };
+            return labels[filter] || filter;
+        },
+        
+        formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+        },
+        
+        formatDate(dateStr) {
+            if (!dateStr) return 'Unknown';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        },
+        
+        categoryName(categories) {
+            if (!categories || !categories.length) return 'Unknown';
+            const catMap = {
+                2000: 'Movies', 2010: 'Movies/Foreign', 2020: 'Movies/Other',
+                2030: 'Movies/SD', 2040: 'Movies/HD', 2045: 'Movies/UHD',
+                2050: 'Movies/BluRay', 2060: 'Movies/3D', 2070: 'Movies/DVD', 2080: 'Movies/WEB-DL',
+                3000: 'Books', 3030: 'Books/Technical',
+                5000: 'TV', 5020: 'TV/SD', 5030: 'TV/HD', 5040: 'TV/UHD',
+                5050: 'TV/Other', 5060: 'TV/Sport', 5070: 'TV/Anime', 5080: 'TV/Documentary'
+            };
+            return catMap[categories[0]] || 'Unknown';
+        },
+        
+        categoryClass(categories) {
+            if (!categories || !categories.length) return 'unknown';
+            const cat = categories[0];
+            if ([2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080].includes(cat)) {
+                return 'movies';
+            }
+            if ([5000, 5020, 5030, 5040, 5050, 5060, 5070, 5080].includes(cat)) {
+                return 'tv';
+            }
+            if ([3000, 3030].includes(cat)) {
+                return 'books';
+            }
+            return 'unknown';
+        }
+    }
+}
+</script>
+{{end}}
