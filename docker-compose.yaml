@@ -19,11 +19,12 @@ services:
     networks:
       - jackett-net
 
-  api:
+  orbit:
     build: .
+    image: unedotamps/orbit-search:master
     container_name: api
     env_file:
-      - .env
+      - .envrc
     ports:
       - "9999:9999"
     dns:
