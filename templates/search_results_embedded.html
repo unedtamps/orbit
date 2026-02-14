@@ -47,8 +47,9 @@
             <select x-model="sizeFilter">
                 <option value="">Any Size</option>
                 <option value="small">Small (< 500 MB)</option>
-                <option value="medium">Medium (500 MB - 5 GB)</option>
-                <option value="large">Large (> 5 GB)</option>
+                <option value="medium">Medium (500 MB - 2 GB)</option>
+                <option value="large">Large (2 GB - 5 GB)</option>
+                <option value="huge">Huge (> 5 GB)</option>
             </select>
         </div>
         
@@ -159,8 +160,9 @@
 function searchFilters(results) {
     const SIZE_LIMITS = {
         small: { max: 524288000 },
-        medium: { min: 524288000, max: 5368709120 },
-        large: { min: 5368709120 }
+        medium: { min: 524288000, max: 2147483648 },
+        large: { min: 2147483648, max: 5368709120 },
+        huge: { min: 5368709120 }
     };
     const QUALITY_PATTERNS = {
         '4k': ['2160p', '4k', 'uhd', 'ultra hd', 'ultrahd'],
@@ -253,7 +255,7 @@ function searchFilters(results) {
             return this.trackerFilter || this.sizeFilter || this.qualityFilter || this.searchQuery;
         },
         sizeLabel(filter) {
-            const labels = { small: '< 500 MB', medium: '500 MB - 5 GB', large: '> 5 GB' };
+            const labels = { small: '< 500 MB', medium: '500 MB - 2 GB', large: '2 GB - 5 GB', huge: '> 5 GB' };
             return labels[filter] || filter;
         },
         qualityLabel(filter) {
@@ -272,17 +274,41 @@ function searchFilters(results) {
             return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         },
         categoryName(categories) {
-            if (!categories || !categories.length) return 'Unknown';
-            const catMap = { 2000: 'Movies', 2010: 'Movies/Foreign', 2020: 'Movies/Other', 2030: 'Movies/SD', 2040: 'Movies/HD', 2045: 'Movies/UHD', 2050: 'Movies/BluRay', 2060: 'Movies/3D', 2070: 'Movies/DVD', 2080: 'Movies/WEB-DL', 3000: 'Books', 3030: 'Books/Technical', 5000: 'TV', 5020: 'TV/SD', 5030: 'TV/HD', 5040: 'TV/UHD', 5050: 'TV/Other', 5060: 'TV/Sport', 5070: 'TV/Anime', 5080: 'TV/Documentary' };
-            return catMap[categories[0]] || 'Unknown';
+            if (!categories || !categories.length) return 'Other';
+            const catMap = {
+                // Movies
+                2000: 'Movies', 2010: 'Movies/Foreign', 2020: 'Movies/Other', 2030: 'Movies/SD',
+                2040: 'Movies/HD', 2045: 'Movies/UHD', 2050: 'Movies/BluRay', 2060: 'Movies/3D',
+                2070: 'Movies/DVD', 2080: 'Movies/WEB-DL', 8000: 'Movies/Other', 100001: 'Movies/Other',
+                100211: 'Movies/HD', 100467: 'Movies/UHD', 100507: 'Movies/HD',
+                // TV
+                5000: 'TV', 5020: 'TV/SD', 5030: 'TV/HD', 5040: 'TV/UHD', 5050: 'TV/Other',
+                5060: 'TV/Sport', 5070: 'TV/Anime', 5080: 'TV/Documentary', 100002: 'TV/Other',
+                100205: 'TV/HD', 100212: 'TV/HD', 105852: 'TV/Other', 112972: 'TV/Anime', 143862: 'TV/Other',
+                // Books
+                3000: 'Books', 3030: 'Books/Technical', 7000: 'Books/Other', 7010: 'Books/Mags',
+                7020: 'Books/EBook', 7030: 'Books/Comics', 100102: 'Books/Other', 100601: 'Books/Other',
+                112812: 'Books/EBook', 115634: 'Books/EBook', 121527: 'Books/EBook', 122878: 'Books/EBook',
+                124764: 'Books/EBook', 126347: 'Books/EBook', 132586: 'Books/EBook', 145689: 'Books/EBook',
+                147656: 'Books/EBook', 148364: 'Books/EBook', 158575: 'Books/EBook', 160428: 'Books/EBook',
+                165359: 'Books/EBook'
+            };
+            return catMap[categories[0]] || 'Other';
         },
         categoryClass(categories) {
-            if (!categories || !categories.length) return 'unknown';
+            if (!categories || !categories.length) return 'other';
             const cat = categories[0];
-            if ([2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080].includes(cat)) return 'movies';
-            if ([5000, 5020, 5030, 5040, 5050, 5060, 5070, 5080].includes(cat)) return 'tv';
-            if ([3000, 3030].includes(cat)) return 'books';
-            return 'unknown';
+            // Movies
+            if ([2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080, 8000,
+                 100001, 100211, 100467, 100507].includes(cat)) return 'movies';
+            // TV
+            if ([5000, 5020, 5030, 5040, 5050, 5060, 5070, 5080, 100002, 100205,
+                 100212, 105852, 112972, 143862].includes(cat)) return 'tv';
+            // Books
+            if ([3000, 3030, 7000, 7010, 7020, 7030, 100102, 100601, 112812, 115634,
+                 121527, 122878, 124764, 126347, 132586, 145689, 147656, 148364,
+                 158575, 160428, 165359].includes(cat)) return 'books';
+            return 'other';
         }
     }
 }

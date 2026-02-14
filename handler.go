@@ -13,6 +13,11 @@ import (
 	jackett "github.com/webtor-io/go-jackett"
 )
 
+type Handler struct {
+	*Fetcher
+	templates *template.Template
+}
+
 func templateFuncs() template.FuncMap {
 	return template.FuncMap{
 		"safeURL": func(u string) template.URL {
@@ -37,54 +42,94 @@ func templateFuncs() template.FuncMap {
 		},
 		"formatDate": func(t time.Time) string {
 			if t.IsZero() {
-				return "Unknown"
+				return "Other"
 			}
 			return t.Format("Jan 2, 2006")
 		},
 		"categoryName": func(categories []uint) string {
 			if len(categories) == 0 {
-				return "Unknown"
+				return "Other"
 			}
 			catMap := map[uint]string{
-				2000: "Movies",
-				2010: "Movies/Foreign",
-				2020: "Movies/Other",
-				2030: "Movies/SD",
-				2040: "Movies/HD",
-				2045: "Movies/UHD",
-				2050: "Movies/BluRay",
-				2060: "Movies/3D",
-				2070: "Movies/DVD",
-				2080: "Movies/WEB-DL",
-				3000: "Books",
-				3030: "Books/Technical",
-				5000: "TV",
-				5020: "TV/SD",
-				5030: "TV/HD",
-				5040: "TV/UHD",
-				5050: "TV/Other",
-				5060: "TV/Sport",
-				5070: "TV/Anime",
-				5080: "TV/Documentary",
+				// Movies
+				2000:   "Movies",
+				2010:   "Movies/Foreign",
+				2020:   "Movies/Other",
+				2030:   "Movies/SD",
+				2040:   "Movies/HD",
+				2045:   "Movies/UHD",
+				2050:   "Movies/BluRay",
+				2060:   "Movies/3D",
+				2070:   "Movies/DVD",
+				2080:   "Movies/WEB-DL",
+				8000:   "Movies/Other",
+				100001: "Movies/Other",
+				100211: "Movies/HD",
+				100467: "Movies/UHD",
+				100507: "Movies/HD",
+				// TV
+				5000:   "TV",
+				5020:   "TV/SD",
+				5030:   "TV/HD",
+				5040:   "TV/UHD",
+				5050:   "TV/Other",
+				5060:   "TV/Sport",
+				5070:   "TV/Anime",
+				5080:   "TV/Documentary",
+				100002: "TV/Other",
+				100205: "TV/HD",
+				100212: "TV/HD",
+				105852: "TV/Other",
+				112972: "TV/Anime",
+				143862: "TV/Other",
+				// Books
+				3000:   "Books",
+				3030:   "Books/Technical",
+				7000:   "Books/Other",
+				7010:   "Books/Mags",
+				7020:   "Books/EBook",
+				7030:   "Books/Comics",
+				100102: "Books/Other",
+				100601: "Books/Other",
+				112812: "Books/EBook",
+				115634: "Books/EBook",
+				121527: "Books/EBook",
+				122878: "Books/EBook",
+				124764: "Books/EBook",
+				126347: "Books/EBook",
+				132586: "Books/EBook",
+				145689: "Books/EBook",
+				147656: "Books/EBook",
+				148364: "Books/EBook",
+				158575: "Books/EBook",
+				160428: "Books/EBook",
+				165359: "Books/EBook",
 			}
 			if name, ok := catMap[categories[0]]; ok {
 				return name
 			}
-			return "Unknown"
+			return "Other"
 		},
 		"categoryClass": func(categories []uint) string {
 			if len(categories) == 0 {
-				return "unknown"
+				return "other"
 			}
 			switch categories[0] {
-			case 2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080:
+			// Movies
+			case 2000, 2010, 2020, 2030, 2040, 2045, 2050, 2060, 2070, 2080, 8000,
+				100001, 100211, 100467, 100507:
 				return "movies"
-			case 5000, 5020, 5030, 5040, 5050, 5060, 5070, 5080:
+			// TV
+			case 5000, 5020, 5030, 5040, 5050, 5060, 5070, 5080,
+				100002, 100205, 100212, 105852, 112972, 143862:
 				return "tv"
-			case 3000, 3030:
+			// Books
+			case 3000, 3030, 7000, 7010, 7020, 7030,
+				100102, 100601, 112812, 115634, 121527, 122878, 124764, 126347,
+				132586, 145689, 147656, 148364, 158575, 160428, 165359:
 				return "books"
 			default:
-				return "unknown"
+				return "other"
 			}
 		},
 		"detectQuality": func(title string) string {
@@ -99,7 +144,7 @@ func templateFuncs() template.FuncMap {
 			case strings.Contains(lower, "hdtv"):
 				return "HD"
 			default:
-				return "Unknown"
+				return "Other"
 			}
 		},
 		"qualityClass": func(title string) string {
@@ -114,7 +159,7 @@ func templateFuncs() template.FuncMap {
 			case strings.Contains(lower, "hdtv"):
 				return "hd"
 			default:
-				return "unknown"
+				return "other"
 			}
 		},
 		"leechers": func(peers, seeders uint) uint {
@@ -143,7 +188,7 @@ func NewHandler() (HanderI, error) {
 	}
 
 	return &Handler{
-		Client:    j,
+		Fetcher:   NewFetcher(j),
 		templates: tmpl,
 	}, nil
 }
@@ -165,41 +210,19 @@ func (h *Handler) SearchWeb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	categoryTitles := map[string]string{
-		"movies": "Movies",
-		"tv":     "TV Series",
-		"books":  "Books",
+	contentType, valid := ParseContentType(category)
+	if !valid {
+		http.Error(w, "Invalid category", http.StatusBadRequest)
+		return
 	}
 
 	data := SearchResult{
 		Query:         query,
 		Category:      category,
-		CategoryTitle: categoryTitles[category],
+		CategoryTitle: ContentTypeTitle(contentType),
 	}
 
-	var results []jackett.Result
-	var err error
-
-	switch category {
-	case "movies":
-		results, err = h.Fetch(
-			r.Context(),
-			jackett.NewMovieSearch().WithCategories(2000).WithQuery(query).Build(),
-		)
-	case "tv":
-		results, err = h.Fetch(
-			r.Context(),
-			jackett.NewTVSearch().WithCategories(5000, 5050, 5070, 5080).WithQuery(query).Build(),
-		)
-	case "books":
-		results, err = h.Fetch(
-			r.Context(),
-			jackett.NewBookSearch().WithCategories(3030, 3000).WithQuery(query).Build(),
-		)
-	default:
-		data.Error = "Invalid category"
-	}
-
+	results, err := h.Fetcher.FetchByType(r.Context(), contentType, query)
 	if err != nil {
 		data.Error = err.Error()
 	} else {
@@ -236,10 +259,7 @@ func (h *Handler) SearchWeb(w http.ResponseWriter, r *http.Request) {
 //	@Router			/movies/{query} [get]
 func (h *Handler) GetMovies(w http.ResponseWriter, r *http.Request) {
 	query := chi.URLParam(r, "query")
-	results, err := h.Fetch(
-		r.Context(),
-		jackett.NewMovieSearch().WithCategories(2000).WithQuery(query).Build(),
-	)
+	results, err := h.Fetcher.FetchMovies(r.Context(), query)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -259,10 +279,7 @@ func (h *Handler) GetMovies(w http.ResponseWriter, r *http.Request) {
 //	@Router			/books/{query} [get]
 func (h *Handler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	query := chi.URLParam(r, "query")
-	results, err := h.Fetch(
-		r.Context(),
-		jackett.NewBookSearch().WithCategories(3030, 3000).WithQuery(query).Build(),
-	)
+	results, err := h.Fetcher.FetchBooks(r.Context(), query)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -273,7 +290,7 @@ func (h *Handler) GetBooks(w http.ResponseWriter, r *http.Request) {
 
 // GetTV godoc
 //
-//	  @Summary		Get TV Series
+//	  @Summary			Get TV Series
 //		  @Description	Get TV Series (JSON API)
 //		  @Tags			tv
 //		  @Produce		json
@@ -282,10 +299,7 @@ func (h *Handler) GetBooks(w http.ResponseWriter, r *http.Request) {
 //		  @Router			/tv/{query} [get]
 func (h *Handler) GetTV(w http.ResponseWriter, r *http.Request) {
 	query := chi.URLParam(r, "query")
-	results, err := h.Fetch(
-		r.Context(),
-		jackett.NewTVSearch().WithCategories(5000, 5050, 5070, 5080).WithQuery(query).Build(),
-	)
+	results, err := h.Fetcher.FetchTV(r.Context(), query)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
