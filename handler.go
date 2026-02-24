@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -27,6 +29,36 @@ func templateFuncs() template.FuncMap {
 		"json": func(v interface{}) string {
 			b, _ := json.Marshal(v)
 			return string(b)
+		},
+		"proxyURL": func(jackettURL string) string {
+			// Convert Jackett download URL to our proxy URL
+			// From: http://localhost:9117/dl/bitsearch/?jackett_apikey=...&path=...&file=...
+			// To: /dl/bitsearch?path=...&file=...
+			if jackettURL == "" {
+				return ""
+			}
+			parsed, err := url.Parse(jackettURL)
+			if err != nil {
+				return jackettURL
+			}
+			// Extract tracker from path (/dl/bitsearch/...)
+			pathParts := strings.Split(strings.Trim(parsed.Path, "/"), "/")
+			if len(pathParts) < 2 || pathParts[0] != "dl" {
+				return jackettURL
+			}
+			tracker := pathParts[1]
+			query := parsed.Query()
+			path := query.Get("path")
+			file := query.Get("file")
+			if path == "" {
+				return jackettURL
+			}
+			newQuery := url.Values{}
+			newQuery.Set("path", path)
+			if file != "" {
+				newQuery.Set("file", file)
+			}
+			return fmt.Sprintf("/dl/%s?%s", tracker, newQuery.Encode())
 		},
 		"formatSize": func(bytes uint64) string {
 			if bytes == 0 {
@@ -188,7 +220,7 @@ func NewHandler() (HanderI, error) {
 	}
 
 	return &Handler{
-		Fetcher:   NewFetcher(j),
+		Fetcher:   NewFetcher(j, apiUrl, apiKey),
 		templates: tmpl,
 	}, nil
 }
@@ -306,6 +338,69 @@ func (h *Handler) GetTV(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	writeJSON(w, results)
+}
+
+func (h *Handler) DownloadProxy(w http.ResponseWriter, r *http.Request) {
+	tracker := chi.URLParam(r, "tracker")
+	if tracker == "" {
+		http.Error(w, "Tracker is required", http.StatusBadRequest)
+		return
+	}
+
+	query := r.URL.Query()
+	path := query.Get("path")
+	file := query.Get("file")
+
+	if path == "" {
+		http.Error(w, "Path is required", http.StatusBadRequest)
+		return
+	}
+
+	jackettURL := fmt.Sprintf(
+		"%s/dl/%s/?jackett_apikey=%s&path=%s",
+		h.apiURL,
+		tracker,
+		h.apiKey,
+		path,
+	)
+	if file != "" {
+		jackettURL = fmt.Sprintf("%s&file=%s", jackettURL, url.QueryEscape(file))
+	}
+
+	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, jackettURL, nil)
+	if err != nil {
+		http.Error(w, "Failed to create request", http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("User-Agent", r.Header.Get("User-Agent"))
+	req.Header.Set("Accept", r.Header.Get("Accept"))
+	req.Header.Set("Accept-Language", r.Header.Get("Accept-Language"))
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// Don't follow redirects - we'll pass them through to the client
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "Failed to fetch from Jackett", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	for key, values := range resp.Header {
+		for _, value := range values {
+			w.Header().Add(key, value)
+		}
+	}
+
+	w.WriteHeader(resp.StatusCode)
+
+	io.Copy(w, resp.Body)
 }
 
 func writeJSON(w http.ResponseWriter, v interface{}) {

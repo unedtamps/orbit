@@ -2,16 +2,85 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"net/url"
+	"strings"
 
 	jackett "github.com/webtor-io/go-jackett"
 )
 
 type Fetcher struct {
 	client *jackett.Client
+	apiURL string
+	apiKey string
 }
 
-func NewFetcher(client *jackett.Client) *Fetcher {
-	return &Fetcher{client: client}
+func NewFetcher(client *jackett.Client, apiURL, apiKey string) *Fetcher {
+	return &Fetcher{client: client, apiURL: apiURL, apiKey: apiKey}
+}
+
+func isMagnetLink(link string) bool {
+	return strings.HasPrefix(strings.ToLower(link), "magnet:?")
+}
+
+func (f *Fetcher) isJackettLink(link string) bool {
+	if f.apiURL == "" {
+		return false
+	}
+	return strings.HasPrefix(link, f.apiURL)
+}
+
+func (f *Fetcher) toProxyURL(jackettURL string) string {
+	// From: http://localhost:9117/dl/bitsearch/?jackett_apikey=...&path=...&file=...
+	// To: /dl/bitsearch?path=...&file=...
+	if jackettURL == "" {
+		return ""
+	}
+	parsed, err := url.Parse(jackettURL)
+	if err != nil {
+		return jackettURL
+	}
+	// Extract tracker from path (/dl/bitsearch/...)
+	pathParts := strings.Split(strings.Trim(parsed.Path, "/"), "/")
+	if len(pathParts) < 2 || pathParts[0] != "dl" {
+		return jackettURL
+	}
+	tracker := pathParts[1]
+	query := parsed.Query()
+	path := query.Get("path")
+	file := query.Get("file")
+	if path == "" {
+		return jackettURL
+	}
+	newQuery := url.Values{}
+	newQuery.Set("path", path)
+	if file != "" {
+		newQuery.Set("file", file)
+	}
+	return fmt.Sprintf("/dl/%s?%s", tracker, newQuery.Encode())
+}
+
+// processResults converts Jackett API links to proxy URLs (hides API key)
+func (f *Fetcher) processResults(
+	ctx context.Context,
+	results []jackett.Result,
+) ([]jackett.Result, error) {
+	for i := range results {
+		if results[i].Link == "" {
+			continue
+		}
+		// Skip if already magnet link
+		if isMagnetLink(results[i].Link) {
+			continue
+		}
+		// Only process if it's a Jackett API link
+		if !f.isJackettLink(results[i].Link) {
+			continue
+		}
+		// Convert to proxy URL instead of fetching magnet (faster)
+		results[i].Link = f.toProxyURL(results[i].Link)
+	}
+	return results, nil
 }
 
 func (f *Fetcher) FetchMovies(ctx context.Context, query string) ([]jackett.Result, error) {
@@ -35,10 +104,10 @@ func (f *Fetcher) FetchMovies(ctx context.Context, query string) ([]jackett.Resu
 			Build(),
 	)
 	if err != nil {
-		return results, nil
+		return f.processResults(ctx, results)
 	}
 
-	return append(results, altResults...), nil
+	return f.processResults(ctx, append(results, altResults...))
 }
 
 func (f *Fetcher) FetchTV(ctx context.Context, query string) ([]jackett.Result, error) {
@@ -61,12 +130,15 @@ func (f *Fetcher) FetchTV(ctx context.Context, query string) ([]jackett.Result, 
 			WithQuery(query).
 			Build(),
 	)
+	if err != nil {
+		return f.processResults(ctx, results)
+	}
 
-	return append(results, altResults...), nil
+	return f.processResults(ctx, append(results, altResults...))
 }
 
 func (f *Fetcher) FetchBooks(ctx context.Context, query string) ([]jackett.Result, error) {
-	return f.client.Fetch(
+	results, err := f.client.Fetch(
 		ctx,
 		jackett.NewBookSearch().
 			WithCategories(3030, 7000, 7010, 7020, 7030, 158575, 115634, 160428, 145689, 112812,
@@ -74,6 +146,10 @@ func (f *Fetcher) FetchBooks(ctx context.Context, query string) ([]jackett.Resul
 			WithQuery(query).
 			Build(),
 	)
+	if err != nil {
+		return nil, err
+	}
+	return f.processResults(ctx, results)
 }
 
 type ContentType string

@@ -54,6 +54,8 @@ func main() {
 	r.Get("/books/{query}", handler.GetBooks)
 	r.Get("/tv/{query}", handler.GetTV)
 
+	r.Get("/dl/{tracker}", handler.DownloadProxy)
+
 	// Swagger Documentation
 	r.Get("/apidocs/*", httpSwagger.Handler(
 		httpSwagger.URL(fmt.Sprintf("%s/apidocs/doc.json", hostURL)),

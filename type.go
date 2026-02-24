@@ -12,6 +12,7 @@ type HanderI interface {
 	GetTV(w http.ResponseWriter, r *http.Request)
 	Index(w http.ResponseWriter, r *http.Request)
 	SearchWeb(w http.ResponseWriter, r *http.Request)
+	DownloadProxy(w http.ResponseWriter, r *http.Request)
 }
 
 type SearchResult struct {
