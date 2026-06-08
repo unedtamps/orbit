@@ -13,7 +13,7 @@
   <a href="https://hub.docker.com/r/unedotamps/orbit-search">
     <img src="https://img.shields.io/docker/pulls/unedotamps/orbit-search?label=Docker%20Pulls" alt="Docker Pulls">
   </a>
-  <a href="https://github.com/unedtamps/torrent-search-api/blob/master/LICENSE">
+  <a href="https://github.com/unedtamps/orbit/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/unedtamps/orbit" alt="License">
   </a>
 </p>
@@ -155,4 +155,4 @@ The server starts at `http://localhost:9999`
 
 ## License
 
-[MIT](LICENSE)
+Apache 2.0
