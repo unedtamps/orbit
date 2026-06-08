@@ -59,7 +59,7 @@
                 </div>
                 <div class="episode-magnets" x-show="open" x-transition>
                     <button class="orbit-btn-primary"
-                            hx-get="/magnet/episode/{{$.TVID}}/s{{printf "%02d" .SeasonNumber}}/e{{printf "%02d" .EpisodeNumber}}?name={{$.TVName}}&season={{printf "%02d" .SeasonNumber}}&episode={{printf "%02d" .EpisodeNumber}}"
+                            hx-get="/magnet/episode/{{$.TVID}}/s{{printf "%02d" .SeasonNumber}}/e{{printf "%02d" .EpisodeNumber}}?name={{$.TVName}}&season={{printf "%02d" .SeasonNumber}}&episode={{printf "%02d" .EpisodeNumber}}&title={{.Name}}"
                             hx-target="#magnet-{{.ID}}"
                             hx-indicator="#magnet-load-{{.ID}}">
                         <i class="fas fa-magnet"></i> Find Magnets
