@@ -22,14 +22,14 @@
             </div>
             <div class="magnet-actions">
                 {{if .MagnetURI}}
-                <a href="{{.MagnetURI}}" class="orbit-btn-primary magnetic">
-                    <i class="fas fa-magnet"></i> Magnet
-                </a>
+                <button class="orbit-btn-primary magnetic copy-magnet-btn" onclick="copyMagnetLink('{{safeURL .MagnetURI}}', this)">
+                    <i class="fas fa-magnet"></i> 1
+                </button>
                 {{end}}
                 {{if .Link}}
-                <a href="{{.Link}}" class="orbit-btn-secondary" target="_blank">
-                    <i class="fas fa-download"></i>
-                </a>
+                <button class="orbit-btn-primary copy-magnet-btn" onclick="copyMagnetLink('{{safeURL .Link}}', this)">
+                    <i class="fas fa-magnet"></i> 2
+                </button>
                 {{end}}
             </div>
         </div>
@@ -65,6 +65,46 @@
 
     if (total > 0) showPage(1);
 })();
+
+function copyMagnetLink(url, btn) {
+    if (url.startsWith('magnet:')) {
+        navigator.clipboard.writeText(url).then(function() {
+            showCopied(btn);
+        });
+    } else if (url.startsWith('/dl/')) {
+        btn.disabled = true;
+        var originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resolving...';
+        fetch('/api/resolve-link?url=' + encodeURIComponent(url))
+            .then(function(resp) { return resp.json(); })
+            .then(function(data) {
+                if (data.url) {
+                    navigator.clipboard.writeText(data.url).then(function() {
+                        showCopied(btn, originalHTML);
+                    });
+                } else {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            })
+            .catch(function(e) {
+                console.error('Resolve failed:', e);
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+    }
+}
+
+function showCopied(btn, originalHTML) {
+    var original = originalHTML || btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+        btn.innerHTML = original;
+        btn.classList.remove('copied');
+        btn.disabled = false;
+    }, 2000);
+}
 </script>
 {{else}}
 <div class="magnet-results-section">

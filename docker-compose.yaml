@@ -40,7 +40,7 @@ services:
     image: unedotamps/orbit-search:master
     container_name: api
     env_file:
-      - .envrc
+      - .env
     ports:
       - "9999:9999"
     dns:

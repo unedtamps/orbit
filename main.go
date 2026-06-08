@@ -86,6 +86,7 @@ func main() {
 	r.Get("/api/movies/search/{query}", h.GetMovies)
 	r.Get("/api/tv/search/{query}", h.GetTV)
 	r.Get("/dl/{tracker}", h.DownloadProxy)
+	r.Get("/api/resolve-link", h.ResolveLink)
 
 	r.Get("/apidocs/*", httpSwagger.Handler(
 		httpSwagger.URL(fmt.Sprintf("%s/apidocs/doc.json", cfg.HostURL)),

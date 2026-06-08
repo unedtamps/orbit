@@ -1281,6 +1281,7 @@ body {
 
 .magnet-actions .orbit-btn-primary { flex: none; padding: 8px 16px; font-size: 0.85rem; }
 .magnet-actions .orbit-btn-secondary { padding: 8px 12px; }
+.copy-magnet-btn.copied { background: var(--orbit-green) !important; border-color: var(--orbit-green) !important; color: #000 !important; }
 
 .no-results { color: var(--text-muted); padding: 20px; text-align: center; }
 
