@@ -6,6 +6,12 @@
         <button class="tab-btn" :class="{'active': filter === 'tv'}" @click="setFilter('tv')"><i class="fas fa-tv"></i> TV Shows</button>
     </div>
 
+    <div class="pagination" x-show="totalPages > 1">
+        <button class="orbit-btn-secondary" @click="goPage(currentPage - 1)" :disabled="currentPage <= 1"><i class="fas fa-chevron-left"></i> Prev</button>
+        <span class="page-info" x-text="'Page ' + currentPage + ' of ' + totalPages"></span>
+        <button class="orbit-btn-secondary" @click="goPage(currentPage + 1)" :disabled="currentPage >= totalPages">Next <i class="fas fa-chevron-right"></i></button>
+    </div>
+
     <div class="orbit-grid results-grid" x-show="!loading" x-transition>
         <template x-for="item in filteredResults" :key="item.id + '-' + item.media_type">
             <a :href="item.media_type === 'movie' ? '/movie/' + item.id : '/tv/' + item.id" class="tmdb-card orbit-card">
@@ -17,7 +23,7 @@
                 <div class="card-content">
                     <h3 class="card-title" x-text="item.title || item.name"></h3>
                     <div class="card-meta-row">
-                        <span class="rating"><i class="fas fa-star"></i> <span x-text="(item.vote_average || 0).toFixed(1)"></span></span>
+                        <span class="rating"><i class="fas fa-star"></i> <span x-text="(item.vote_average || 0).toFixed(1)"></span> <span class="vote-count"><i class="fas fa-users"></i> <span x-text="'(' + (item.vote_count || 0) + ')'"></span></span></span>
                         <span class="year" x-text="(item.release_date || item.first_air_date || '').substring(0, 4)"></span>
                     </div>
                     <p class="card-overview" x-text="item.overview ? item.overview.substring(0, 120) + '...' : ''"></p>
@@ -30,12 +36,6 @@
         <i class="fas fa-satellite-dish"></i>
         <p x-show="!errorMsg">No results found</p>
         <p class="orbit-error" x-show="errorMsg" x-text="errorMsg" style="color: var(--orbit-pink)"></p>
-    </div>
-
-    <div class="pagination" x-show="totalPages > 1">
-        <button class="orbit-btn-secondary" @click="goPage(currentPage - 1)" :disabled="currentPage <= 1"><i class="fas fa-chevron-left"></i> Prev</button>
-        <span class="page-info" x-text="'Page ' + currentPage + ' of ' + totalPages"></span>
-        <button class="orbit-btn-secondary" @click="goPage(currentPage + 1)" :disabled="currentPage >= totalPages">Next <i class="fas fa-chevron-right"></i></button>
     </div>
 </div>
 {{end}}

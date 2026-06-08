@@ -47,7 +47,7 @@
                             <h3 class="episode-title">{{.Name}}</h3>
                             <div class="episode-meta">
                                 {{if .AirDate}}<span><i class="fas fa-calendar"></i> {{.AirDate}}</span>{{end}}
-                                {{if .VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .VoteAverage}}</span>{{end}}
+                                {{if .VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .VoteAverage}} <span class="vote-count"><i class="fas fa-users"></i> ({{.VoteCount}})</span></span>{{end}}
                                 {{if .Runtime}}<span><i class="fas fa-clock"></i> {{.Runtime}}m</span>{{end}}
                             </div>
                         </div>
@@ -75,7 +75,7 @@
     </main>
 
     <footer class="orbit-footer">
-        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2026</p>
     </footer>
 </body>
 </html>

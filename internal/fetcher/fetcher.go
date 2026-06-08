@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 
 	"github.com/unedtamps/orbit/internal/model"
@@ -66,7 +67,8 @@ func ToProxyURL(jackettURL string) string {
 	return fmt.Sprintf("/dl/%s?%s", tracker, newQuery.Encode())
 }
 
-// processResults converts Jackett API links to proxy URLs (hides API key).
+// processResults converts Jackett API links to proxy URLs (hides API key)
+// and sorts by seeders desc, then peers desc.
 func (f *Fetcher) processResults(
 	ctx context.Context,
 	results []jackett.Result,
@@ -83,6 +85,14 @@ func (f *Fetcher) processResults(
 		}
 		results[i].Link = ToProxyURL(results[i].Link)
 	}
+
+	sort.Slice(results, func(i, j int) bool {
+		if results[i].Seeders != results[j].Seeders {
+			return results[i].Seeders > results[j].Seeders
+		}
+		return results[i].Peers > results[j].Peers
+	})
+
 	return results, nil
 }
 

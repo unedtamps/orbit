@@ -54,6 +54,57 @@
 
         <div id="search-results"></div>
 
+        <div class="trending-section" x-data="trendingSection()" x-init="init()">
+            <div x-show="movies.length > 0 || moviesLoading">
+                <h2 class="trending-title"><i class="fas fa-fire"></i> Trending Movies</h2>
+                <div class="orbit-grid results-grid" x-show="!moviesLoading" x-transition>
+                    <template x-for="item in movies" :key="item.id">
+                        <a :href="'/movie/' + item.id" class="tmdb-card orbit-card">
+                            <div class="card-glow"></div>
+                            <div class="tmdb-card-poster">
+                                <img :src="item.poster_path ? 'https://image.tmdb.org/t/p/w342' + item.poster_path : '/static/favicon.svg'" :alt="item.title" loading="lazy">
+                                <span class="media-badge badge-movie">Movie</span>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title" x-text="item.title"></h3>
+                                <div class="card-meta-row">
+                                    <span class="rating"><i class="fas fa-star"></i> <span x-text="(item.vote_average || 0).toFixed(1)"></span> <span class="vote-count"><i class="fas fa-users"></i> <span x-text="'(' + (item.vote_count || 0) + ')'"></span></span></span>
+                                    <span class="year" x-text="(item.release_date || '').substring(0, 4)"></span>
+                                </div>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="tv.length > 0 || tvLoading">
+                <h2 class="trending-title"><i class="fas fa-fire"></i> Trending TV Shows</h2>
+                <div class="orbit-grid results-grid" x-show="!tvLoading" x-transition>
+                    <template x-for="item in tv" :key="item.id">
+                        <a :href="'/tv/' + item.id" class="tmdb-card orbit-card">
+                            <div class="card-glow"></div>
+                            <div class="tmdb-card-poster">
+                                <img :src="item.poster_path ? 'https://image.tmdb.org/t/p/w342' + item.poster_path : '/static/favicon.svg'" :alt="item.name" loading="lazy">
+                                <span class="media-badge badge-tv">TV</span>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title" x-text="item.name"></h3>
+                                <div class="card-meta-row">
+                                    <span class="rating"><i class="fas fa-star"></i> <span x-text="(item.vote_average || 0).toFixed(1)"></span> <span class="vote-count"><i class="fas fa-users"></i> <span x-text="'(' + (item.vote_count || 0) + ')'"></span></span></span>
+                                    <span class="year" x-text="(item.first_air_date || '').substring(0, 4)"></span>
+                                </div>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+            </div>
+
+            <div class="empty-state" x-show="!loading && movies.length === 0 && tv.length === 0 && errorMsg">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p x-text="errorMsg"></p>
+            </div>
+        </div>
+
         <div class="api-section">
             <div class="api-card">
                 <h3><i class="fas fa-code"></i> Developer API</h3>
@@ -67,7 +118,7 @@
     </main>
 
     <footer class="orbit-footer">
-        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2026</p>
     </footer>
 
     <script>
@@ -81,6 +132,52 @@
                 window.addEventListener('search-done', () => {
                     this.loading = false;
                 });
+            }
+        }
+    }
+    function trendingSection() {
+        return {
+            movies: [],
+            tv: [],
+            loading: true,
+            moviesLoading: true,
+            tvLoading: true,
+            errorMsg: '',
+            async init() {
+                await Promise.all([this.loadMovies(), this.loadTV()]);
+                this.loading = false;
+            },
+            async loadMovies() {
+                this.moviesLoading = true;
+                try {
+                    const resp = await fetch('/api/trending/movies?window=week');
+                    const data = await resp.json();
+                    if (resp.ok) {
+                        this.movies = data.results || [];
+                    } else {
+                        this.errorMsg = data.error || 'Failed to load trending movies';
+                    }
+                } catch (e) {
+                    console.error('Trending movies fetch failed:', e);
+                    this.errorMsg = 'Failed to load trending movies';
+                }
+                this.moviesLoading = false;
+            },
+            async loadTV() {
+                this.tvLoading = true;
+                try {
+                    const resp = await fetch('/api/trending/tv?window=week');
+                    const data = await resp.json();
+                    if (resp.ok) {
+                        this.tv = data.results || [];
+                    } else {
+                        this.errorMsg = data.error || 'Failed to load trending TV';
+                    }
+                } catch (e) {
+                    console.error('Trending TV fetch failed:', e);
+                    this.errorMsg = 'Failed to load trending TV';
+                }
+                this.tvLoading = false;
             }
         }
     }

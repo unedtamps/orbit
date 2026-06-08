@@ -41,7 +41,7 @@
                 <div class="detail-meta">
                     {{if .Movie.ReleaseDate}}<span><i class="fas fa-calendar"></i> {{.Movie.ReleaseDate}}</span>{{end}}
                     {{if .Movie.Runtime}}<span><i class="fas fa-clock"></i> {{.Movie.Runtime}} min</span>{{end}}
-                    {{if .Movie.VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .Movie.VoteAverage}}</span>{{end}}
+                    {{if .Movie.VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .Movie.VoteAverage}} <span class="vote-count"><i class="fas fa-users"></i> ({{.Movie.VoteCount}})</span></span>{{end}}
                 </div>
                 <div class="detail-genres">
                     {{range .Movie.Genres}}<span class="genre-tag">{{.Name}}</span>{{end}}
@@ -111,7 +111,7 @@
     </main>
 
     <footer class="orbit-footer">
-        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2026</p>
     </footer>
 
     <script>

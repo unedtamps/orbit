@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -143,6 +144,12 @@ func (h *MagnetHandler) GetEpisodeMagnets(w http.ResponseWriter, r *http.Request
 			results = results1
 		} else {
 			results = dedupe(results1, results2)
+			sort.Slice(results, func(i, j int) bool {
+				if results[i].Seeders != results[j].Seeders {
+					return results[i].Seeders > results[j].Seeders
+				}
+				return results[i].Peers > results[j].Peers
+			})
 		}
 	} else {
 		results = results1

@@ -77,6 +77,9 @@ func main() {
 	r.Get("/api/movie/{id}/reviews", tmdbH.GetMovieReviews)
 	r.Get("/api/tv/{id}/reviews", tmdbH.GetTVReviews)
 
+	r.Get("/api/trending/movies", tmdbH.GetTrendingMovies)
+	r.Get("/api/trending/tv", tmdbH.GetTrendingTV)
+
 	r.Get("/magnet/movie/{id}", magnetH.GetMovieMagnets)
 	r.Get("/magnet/episode/{id}/s{season}/e{episode}", magnetH.GetEpisodeMagnets)
 

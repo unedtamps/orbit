@@ -1,10 +1,15 @@
 {{define "magnet_results.html"}}
 {{if .}}
-<div class="magnet-results-section">
+<div class="magnet-results-section" id="magnet-results-container">
     <h3><i class="fas fa-magnet"></i> Magnet Links ({{len .}} results)</h3>
-    <div class="magnet-list">
+    <div class="pagination" id="magnet-pagination" style="display:none">
+        <button class="orbit-btn-secondary" id="magnet-prev" onclick="magnetPagePrev()"><i class="fas fa-chevron-left"></i> Prev</button>
+        <span class="page-info" id="magnet-page-info"></span>
+        <button class="orbit-btn-secondary" id="magnet-next" onclick="magnetPageNext()"><i class="fas fa-chevron-right"></i> Next</button>
+    </div>
+    <div class="magnet-list" id="magnet-list">
         {{range .}}
-        <div class="magnet-item">
+        <div class="magnet-item" data-magnet-item>
             <div class="magnet-info">
                 <div class="magnet-title" title="{{.Title}}">{{.Title}}</div>
                 <div class="magnet-meta">
@@ -31,6 +36,36 @@
         {{end}}
     </div>
 </div>
+<script>
+(function() {
+    var items = document.querySelectorAll('#magnet-list [data-magnet-item]');
+    var total = items.length;
+    var perPage = 10;
+    var currentPage = 1;
+    var totalPages = Math.ceil(total / perPage) || 1;
+
+    function showPage(page) {
+        currentPage = page;
+        var start = (page - 1) * perPage;
+        var end = start + perPage;
+        for (var i = 0; i < total; i++) {
+            items[i].style.display = (i >= start && i < end) ? '' : 'none';
+        }
+        var pag = document.getElementById('magnet-pagination');
+        if (totalPages > 1) {
+            pag.style.display = '';
+        }
+        document.getElementById('magnet-page-info').textContent = 'Page ' + currentPage + ' of ' + totalPages;
+        document.getElementById('magnet-prev').disabled = currentPage <= 1;
+        document.getElementById('magnet-next').disabled = currentPage >= totalPages;
+    }
+
+    window.magnetPagePrev = function() { if (currentPage > 1) showPage(currentPage - 1); };
+    window.magnetPageNext = function() { if (currentPage < totalPages) showPage(currentPage + 1); };
+
+    if (total > 0) showPage(1);
+})();
+</script>
 {{else}}
 <div class="magnet-results-section">
     <p class="no-results">No magnet links found</p>

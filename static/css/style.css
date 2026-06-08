@@ -960,6 +960,8 @@ body {
 
 .card-meta-row .rating { color: var(--orbit-yellow); }
 .card-meta-row .rating i { margin-right: 4px; }
+.card-meta-row .rating .vote-count { color: var(--text-muted); font-size: 0.8em; margin-left: 4px; }
+.card-meta-row .rating .vote-count i { margin-right: 2px; }
 .card-meta-row .year { color: var(--text-muted); }
 
 .card-overview {
@@ -1038,6 +1040,8 @@ body {
 
 .detail-meta i { margin-right: 6px; color: var(--orbit-cyan); }
 .detail-meta .rating { color: var(--orbit-yellow); }
+.detail-meta .rating .vote-count { color: var(--text-muted); font-size: 0.85em; margin-left: 4px; }
+.detail-meta .rating .vote-count i { margin-right: 2px; }
 
 .detail-genres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
 
@@ -1425,6 +1429,24 @@ body {
 
     .magnet-item { flex-direction: column; gap: 12px; align-items: flex-start; }
     .magnet-actions { margin-left: 0; }
+}
+
+/* Trending Section */
+.trending-section {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.trending-title {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.trending-title i {
+    margin-right: 10px;
+    color: var(--orbit-orange);
 }
 
 /* Search Overlay */

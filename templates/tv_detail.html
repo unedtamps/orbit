@@ -41,7 +41,7 @@
                 <div class="detail-meta">
                     {{if .TV.FirstAirDate}}<span><i class="fas fa-calendar"></i> {{.TV.FirstAirDate}} {{if .TV.LastAirDate}}- {{.TV.LastAirDate}}{{end}}</span>{{end}}
                     <span><i class="fas fa-film"></i> {{.TV.NumberOfSeasons}} seasons, {{.TV.NumberOfEpisodes}} episodes</span>
-                    {{if .TV.VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .TV.VoteAverage}}</span>{{end}}
+                    {{if .TV.VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .TV.VoteAverage}} <span class="vote-count"><i class="fas fa-users"></i> ({{.TV.VoteCount}})</span></span>{{end}}
                 </div>
                 <div class="detail-genres">
                     {{range .TV.Genres}}<span class="genre-tag">{{.Name}}</span>{{end}}
@@ -120,7 +120,7 @@
     </main>
 
     <footer class="orbit-footer">
-        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2026</p>
     </footer>
 
     <script>

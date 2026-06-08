@@ -167,3 +167,37 @@ func (h *TMDBHandler) GetTVReviews(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
+
+func (h *TMDBHandler) GetTrendingMovies(w http.ResponseWriter, r *http.Request) {
+	window := r.URL.Query().Get("window")
+	if window == "" {
+		window = "week"
+	}
+
+	result, err := h.client.GetTrendingMovies(window)
+	if err != nil {
+		log.Printf("TMDB trending movies error: %v", err)
+		writeJSONError(w, cleanTMDBError(err), http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
+func (h *TMDBHandler) GetTrendingTV(w http.ResponseWriter, r *http.Request) {
+	window := r.URL.Query().Get("window")
+	if window == "" {
+		window = "week"
+	}
+
+	result, err := h.client.GetTrendingTV(window)
+	if err != nil {
+		log.Printf("TMDB trending TV error: %v", err)
+		writeJSONError(w, cleanTMDBError(err), http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
