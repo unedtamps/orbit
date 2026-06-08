@@ -75,8 +75,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/unedtamps/torrent-search-api.git
-cd torrent-search-api
+git clone https://github.com/unedtamps/orbit.git
+cd orbit
 
 # Configure environment
 cp .envrc.example .env
