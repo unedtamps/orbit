@@ -320,6 +320,10 @@ body {
     display: block;
 }
 
+.loading-orbit.htmx-indicator.htmx-request {
+    display: block;
+}
+
 .orbit-loader {
     position: relative;
     width: 80px;
@@ -679,11 +683,6 @@ body {
     color: var(--orbit-purple);
 }
 
-.orbit-badge.cat-books {
-    background: rgba(255, 215, 0, 0.15);
-    color: var(--orbit-yellow);
-}
-
 .orbit-badge.quality-hd {
     background: rgba(0, 255, 136, 0.15);
     color: var(--orbit-green);
@@ -887,6 +886,458 @@ body {
     margin-right: 8px;
 }
 
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.tab-btn {
+    padding: 10px 24px;
+    background: var(--space-card);
+    border: 1px solid var(--space-border);
+    border-radius: 20px;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    border-color: var(--orbit-cyan);
+    color: var(--orbit-cyan);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(184, 41, 221, 0.15));
+    border-color: var(--orbit-cyan);
+    color: var(--orbit-cyan);
+    box-shadow: var(--glow-cyan);
+}
+
+.tab-btn i { margin-right: 6px; }
+
+/* TMDB Card */
+.tmdb-card { display: block; text-decoration: none; color: inherit; }
+
+.tmdb-card-poster {
+    position: relative;
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    border-radius: 16px 16px 0 0;
+}
+
+.tmdb-card-poster img { width: 100%; height: 100%; object-fit: cover; }
+
+.media-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-movie { background: rgba(0, 212, 255, 0.9); color: #000; }
+.badge-tv { background: rgba(184, 41, 221, 0.9); color: #fff; }
+
+.tmdb-card .card-content { padding: 15px; }
+.tmdb-card .card-title { font-size: 0.95rem; margin-bottom: 8px; }
+
+.card-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.card-meta-row .rating { color: var(--orbit-yellow); }
+.card-meta-row .rating i { margin-right: 4px; }
+.card-meta-row .year { color: var(--text-muted); }
+
+.card-overview {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.results-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+/* Detail Page */
+.detail-backdrop {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-size: cover;
+    background-position: center top;
+    margin-bottom: -100px;
+}
+
+.backdrop-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, var(--space-bg) 100%);
+}
+
+.detail-header {
+    position: relative;
+    display: flex;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    z-index: 1;
+}
+
+.detail-header.compact { margin-top: 20px; }
+
+.detail-poster { flex-shrink: 0; width: 300px; }
+
+.detail-poster img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.detail-info { flex: 1; padding-top: 20px; }
+
+.detail-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: var(--gradient-1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.detail-tagline { font-style: italic; color: var(--text-muted); margin-bottom: 16px; }
+
+.detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.detail-meta i { margin-right: 6px; color: var(--orbit-cyan); }
+.detail-meta .rating { color: var(--orbit-yellow); }
+
+.detail-genres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+
+.genre-tag {
+    padding: 4px 12px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--orbit-cyan);
+}
+
+.detail-overview { color: var(--text-secondary); line-height: 1.7; margin-bottom: 20px; }
+
+.detail-network { color: var(--text-muted); margin-bottom: 20px; }
+.detail-network i { margin-right: 8px; color: var(--orbit-purple); }
+
+.detail-actions { margin-top: 20px; }
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--orbit-cyan);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+/* Sections */
+.section { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+
+.section-title { font-size: 1.3rem; margin-bottom: 20px; color: var(--text-primary); }
+.section-title i { margin-right: 10px; color: var(--orbit-cyan); }
+
+/* Cast Scroll */
+.cast-scroll {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--space-border) transparent;
+}
+
+.cast-card { flex-shrink: 0; width: 120px; text-align: center; }
+
+.cast-photo {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 8px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--space-border);
+}
+
+.cast-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.cast-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--space-card);
+    color: var(--text-muted);
+    font-size: 1.5rem;
+}
+
+.cast-info strong { display: block; font-size: 0.8rem; color: var(--text-primary); }
+.cast-info span { font-size: 0.75rem; color: var(--text-muted); }
+
+/* Seasons Grid */
+.seasons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+}
+
+.season-card { text-decoration: none; color: inherit; }
+
+.season-poster { aspect-ratio: 2/3; overflow: hidden; border-radius: 12px; margin-bottom: 10px; }
+.season-poster img { width: 100%; height: 100%; object-fit: cover; }
+
+.season-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--space-card);
+    border: 1px solid var(--space-border);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 2rem;
+}
+
+.season-card h3 { font-size: 0.9rem; margin-bottom: 4px; }
+.season-meta { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Episodes List */
+.episodes-list {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.episode-card {
+    background: var(--space-card);
+    border: 1px solid var(--space-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+}
+
+.episode-card:hover { border-color: var(--orbit-cyan); }
+
+.episode-main { display: flex; gap: 16px; padding: 16px; cursor: pointer; }
+
+.episode-still { flex-shrink: 0; width: 200px; border-radius: 10px; overflow: hidden; }
+.episode-still img { width: 100%; height: 100%; object-fit: cover; }
+
+.episode-placeholder {
+    width: 100%;
+    height: 112px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--space-dark);
+    color: var(--text-muted);
+    font-size: 1.5rem;
+}
+
+.episode-info { flex: 1; min-width: 0; }
+.episode-header { margin-bottom: 8px; }
+
+.episode-code {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(184, 41, 221, 0.15);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--orbit-purple);
+    margin-bottom: 4px;
+}
+
+.episode-title { font-size: 1rem; margin-bottom: 4px; }
+
+.episode-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.episode-meta .rating { color: var(--orbit-yellow); }
+
+.episode-overview {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-top: 8px;
+}
+
+.episode-toggle {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    padding: 0 12px;
+}
+
+.episode-magnets {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--space-border);
+}
+
+/* Magnet Results */
+.magnet-results-section { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+
+.magnet-loading.htmx-indicator {
+    display: none;
+    text-align: center;
+    padding: 30px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.magnet-loading.htmx-request {
+    display: block;
+}
+
+.magnet-results-section h3 { font-size: 1rem; margin-bottom: 12px; color: var(--text-secondary); }
+.magnet-results-section h3 i { margin-right: 8px; color: var(--orbit-cyan); }
+
+.magnet-list { display: flex; flex-direction: column; gap: 8px; }
+
+.magnet-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--space-dark);
+    border: 1px solid var(--space-border);
+    border-radius: 10px;
+    transition: border-color 0.3s;
+}
+
+.magnet-item:hover { border-color: var(--orbit-cyan); }
+
+.magnet-info { flex: 1; min-width: 0; }
+
+.magnet-title {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.magnet-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.magnet-meta .tracker { color: var(--orbit-cyan); }
+.magnet-meta .seeders { color: var(--orbit-green); }
+.magnet-meta .peers { color: var(--orbit-pink); }
+
+.magnet-actions { display: flex; gap: 8px; flex-shrink: 0; margin-left: 12px; }
+
+.magnet-actions .orbit-btn-primary { flex: none; padding: 8px 16px; font-size: 0.85rem; }
+.magnet-actions .orbit-btn-secondary { padding: 8px 12px; }
+
+.no-results { color: var(--text-muted); padding: 20px; text-align: center; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+.empty-state i { font-size: 3rem; margin-bottom: 16px; display: block; color: var(--text-muted); }
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 30px;
+    padding: 20px;
+}
+
+.page-info { color: var(--text-muted); font-size: 0.9rem; }
+
+.pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Reviews */
+.reviews-container { display: flex; flex-direction: column; gap: 16px; }
+
+.review-card {
+    background: var(--space-card);
+    border: 1px solid var(--space-border);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.review-author { display: flex; gap: 12px; align-items: center; }
+
+.review-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.review-author strong { display: block; font-size: 0.9rem; }
+.review-date { font-size: 0.8rem; color: var(--text-muted); }
+
+.review-rating { color: var(--orbit-yellow); font-weight: 600; }
+.review-rating i { margin-right: 4px; }
+
+.review-content {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .hero-content h1 {
@@ -942,4 +1393,36 @@ body {
     .filter-search-box {
         flex-direction: row;
     }
+
+    .results-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .detail-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .detail-poster { width: 200px; }
+
+    .detail-title { font-size: 1.8rem; }
+
+    .detail-meta { justify-content: center; }
+
+    .detail-genres { justify-content: center; }
+
+    .detail-backdrop { height: 250px; }
+
+    .cast-card { width: 100px; }
+    .cast-photo { width: 80px; height: 80px; }
+
+    .seasons-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+
+    .episode-main { flex-direction: column; }
+    .episode-still { width: 100%; height: auto; }
+
+    .magnet-item { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .magnet-actions { margin-left: 0; }
 }

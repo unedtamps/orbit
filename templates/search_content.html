@@ -1,0 +1,27 @@
+{{define "search_content.html"}}
+<div class="main-container">
+    <div class="hero-section compact">
+        <div class="hero-content">
+            <h1 class="glitch-text" data-text="ORBITSEARCH">ORBITSEARCH</h1>
+        </div>
+    </div>
+    <div class="search-container">
+        <form class="orbit-search-form" action="/search" method="GET"
+              hx-get="/search"
+              hx-target="#search-results"
+              hx-swap="innerHTML"
+              hx-indicator="#search-loading">
+            <div class="orbit-input-wrapper">
+                <div class="orbit-input-ring">
+                    <input type="text" name="q" class="orbit-input" value="{{.Query}}" placeholder="Search movies, TV shows..." autocomplete="off" required autofocus>
+                    <button type="submit" class="orbit-submit"><i class="fas fa-rocket"></i></button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="search-results">
+        {{template "search_results_partial.html" .}}
+    </div>
+</div>
+{{end}}

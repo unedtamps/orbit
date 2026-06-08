@@ -1,0 +1,142 @@
+{{define "movie_detail.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Movie.Title}} - OrbitSearch</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
+</head>
+<body>
+    <div class="universe-bg"></div>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <a href="/" class="logo"><i class="fas fa-satellite"></i><span>OrbitSearch</span></a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Search</a>
+            <a href="/apidocs/">API</a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        {{if .Movie.BackdropPath}}
+        <div class="detail-backdrop" style="background-image: url('https://image.tmdb.org/t/p/w1280{{.Movie.BackdropPath}}')">
+            <div class="backdrop-overlay"></div>
+        </div>
+        {{end}}
+
+        <div class="detail-header">
+            <div class="detail-poster">
+                {{if .Movie.PosterPath}}<img src="https://image.tmdb.org/t/p/w500{{.Movie.PosterPath}}" alt="{{.Movie.Title}}">{{end}}
+            </div>
+            <div class="detail-info">
+                <h1 class="detail-title">{{.Movie.Title}}</h1>
+                {{if .Movie.Tagline}}<p class="detail-tagline">"{{.Movie.Tagline}}"</p>{{end}}
+                <div class="detail-meta">
+                    {{if .Movie.ReleaseDate}}<span><i class="fas fa-calendar"></i> {{.Movie.ReleaseDate}}</span>{{end}}
+                    {{if .Movie.Runtime}}<span><i class="fas fa-clock"></i> {{.Movie.Runtime}} min</span>{{end}}
+                    {{if .Movie.VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .Movie.VoteAverage}}</span>{{end}}
+                </div>
+                <div class="detail-genres">
+                    {{range .Movie.Genres}}<span class="genre-tag">{{.Name}}</span>{{end}}
+                </div>
+                {{if .Movie.Overview}}<p class="detail-overview">{{.Movie.Overview}}</p>{{end}}
+                <div class="detail-actions">
+                    <button class="orbit-btn-primary"
+                            hx-get="/magnet/movie/{{.Movie.ID}}?title={{.Movie.Title}}&year={{.Movie.ReleaseDate}}"
+                            hx-target="#magnet-results"
+                            hx-swap="innerHTML"
+                            hx-indicator="#magnet-loading">
+                        <i class="fas fa-magnet"></i> Find Magnets
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="magnet-loading" class="magnet-loading htmx-indicator">
+            <div class="orbit-loader"><div class="planet"></div><div class="satellite"></div></div>
+            <p class="loading-text">Searching for magnet links...</p>
+        </div>
+        <div id="magnet-results"></div>
+
+        {{if and .Movie.Credits (gt (len .Movie.Credits.Cast) 0)}}
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-users"></i> Cast</h2>
+            <div class="cast-scroll">
+                {{range first 15 .Movie.Credits.Cast}}
+                <div class="cast-card">
+                    <div class="cast-photo">
+                        {{if .ProfilePath}}<img src="https://image.tmdb.org/t/p/w185{{.ProfilePath}}" alt="{{.Name}}" loading="lazy">
+                        {{else}}<div class="cast-placeholder"><i class="fas fa-user"></i></div>{{end}}
+                    </div>
+                    <div class="cast-info"><strong>{{.Name}}</strong><span>{{.Character}}</span></div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <div class="section" x-data="reviewSection('/api/movie/{{.Movie.ID}}/reviews')">
+            <h2 class="section-title"><i class="fas fa-comments"></i> Reviews</h2>
+            <div class="reviews-container">
+                <template x-for="review in reviews" :key="review.id">
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-author">
+                                <img :src="review.author_details.avatar_path ? (review.author_details.avatar_path.startsWith('/http') ? review.author_details.avatar_path.substring(1) : 'https://image.tmdb.org/t/p/w45' + review.author_details.avatar_path) : ''" :alt="review.author" class="review-avatar" onerror="this.style.display='none'">
+                                <div>
+                                    <strong x-text="review.author_details.name || review.author_details.username || review.author"></strong>
+                                    <span class="review-date" x-text="new Date(review.created_at).toLocaleDateString()"></span>
+                                </div>
+                            </div>
+                            <div class="review-rating" x-show="review.author_details.rating"><i class="fas fa-star"></i> <span x-text="review.author_details.rating"></span></div>
+                        </div>
+                        <div class="review-content" x-html="review.content.length > 500 ? review.content.substring(0, 500) + '...' : review.content"></div>
+                    </div>
+                </template>
+                <div class="empty-state" x-show="!loading && reviews.length === 0"><p>No reviews yet</p></div>
+            </div>
+            <div class="pagination" x-show="totalPages > 1">
+                <button class="orbit-btn-secondary" @click="page > 1 && (page--, loadReviews())" :disabled="page <= 1"><i class="fas fa-chevron-left"></i> Prev</button>
+                <span class="page-info" x-text="'Page ' + page + ' of ' + totalPages"></span>
+                <button class="orbit-btn-secondary" @click="page < totalPages && (page++, loadReviews())" :disabled="page >= totalPages">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="orbit-footer">
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+    </footer>
+
+    <script>
+    function reviewSection(apiUrl) {
+        return {
+            reviews: [], page: 1, totalPages: 1, loading: false,
+            init() { this.loadReviews(); },
+            async loadReviews() {
+                this.loading = true;
+                try {
+                    const resp = await fetch(apiUrl + '?page=' + this.page);
+                    const data = await resp.json();
+                    if (resp.ok) {
+                        this.reviews = data.results || [];
+                        this.totalPages = data.total_pages || 1;
+                    } else {
+                        console.error('Reviews failed:', data.error);
+                        this.reviews = [];
+                    }
+                } catch (e) { console.error('Reviews fetch failed:', e); this.reviews = []; }
+                this.loading = false;
+            }
+        }
+    }
+    </script>
+</body>
+</html>
+{{end}}

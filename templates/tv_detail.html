@@ -1,0 +1,151 @@
+{{define "tv_detail.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.TV.Name}} - OrbitSearch</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
+</head>
+<body>
+    <div class="universe-bg"></div>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <a href="/" class="logo"><i class="fas fa-satellite"></i><span>OrbitSearch</span></a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Search</a>
+            <a href="/apidocs/">API</a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        {{if .TV.BackdropPath}}
+        <div class="detail-backdrop" style="background-image: url('https://image.tmdb.org/t/p/w1280{{.TV.BackdropPath}}')">
+            <div class="backdrop-overlay"></div>
+        </div>
+        {{end}}
+
+        <div class="detail-header">
+            <div class="detail-poster">
+                {{if .TV.PosterPath}}<img src="https://image.tmdb.org/t/p/w500{{.TV.PosterPath}}" alt="{{.TV.Name}}">{{end}}
+            </div>
+            <div class="detail-info">
+                <h1 class="detail-title">{{.TV.Name}}</h1>
+                {{if .TV.Tagline}}<p class="detail-tagline">"{{.TV.Tagline}}"</p>{{end}}
+                <div class="detail-meta">
+                    {{if .TV.FirstAirDate}}<span><i class="fas fa-calendar"></i> {{.TV.FirstAirDate}} {{if .TV.LastAirDate}}- {{.TV.LastAirDate}}{{end}}</span>{{end}}
+                    <span><i class="fas fa-film"></i> {{.TV.NumberOfSeasons}} seasons, {{.TV.NumberOfEpisodes}} episodes</span>
+                    {{if .TV.VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .TV.VoteAverage}}</span>{{end}}
+                </div>
+                <div class="detail-genres">
+                    {{range .TV.Genres}}<span class="genre-tag">{{.Name}}</span>{{end}}
+                </div>
+                {{if .TV.Overview}}<p class="detail-overview">{{.TV.Overview}}</p>{{end}}
+                {{if .TV.Networks}}<p class="detail-network"><i class="fas fa-tv"></i> {{range $i, $n := .TV.Networks}}{{if $i}}, {{end}}{{$n.Name}}{{end}}</p>{{end}}
+            </div>
+        </div>
+
+        {{if .TV.Seasons}}
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-list"></i> Seasons</h2>
+            <div class="seasons-grid">
+                {{range .TV.Seasons}}
+                {{if gt .EpisodeCount 0}}
+                <a href="/tv/{{$.TVID}}/season/{{.SeasonNumber}}" class="season-card orbit-card">
+                    <div class="card-glow"></div>
+                    <div class="season-poster">
+                        {{if .PosterPath}}<img src="https://image.tmdb.org/t/p/w200{{.PosterPath}}" alt="{{.Name}}" loading="lazy">
+                        {{else}}<div class="season-placeholder"><i class="fas fa-film"></i></div>{{end}}
+                    </div>
+                    <div class="card-content">
+                        <h3>{{.Name}}</h3>
+                        <span class="season-meta">{{.EpisodeCount}} episodes</span>
+                    </div>
+                </a>
+                {{end}}
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        {{if and .TV.Credits (gt (len .TV.Credits.Cast) 0)}}
+        <div class="section">
+            <h2 class="section-title"><i class="fas fa-users"></i> Cast</h2>
+            <div class="cast-scroll">
+                {{range first 15 .TV.Credits.Cast}}
+                <div class="cast-card">
+                    <div class="cast-photo">
+                        {{if .ProfilePath}}<img src="https://image.tmdb.org/t/p/w185{{.ProfilePath}}" alt="{{.Name}}" loading="lazy">
+                        {{else}}<div class="cast-placeholder"><i class="fas fa-user"></i></div>{{end}}
+                    </div>
+                    <div class="cast-info"><strong>{{.Name}}</strong><span>{{.Character}}</span></div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <div class="section" x-data="reviewSection('/api/tv/{{.TV.ID}}/reviews')">
+            <h2 class="section-title"><i class="fas fa-comments"></i> Reviews</h2>
+            <div class="reviews-container">
+                <template x-for="review in reviews" :key="review.id">
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-author">
+                                <img :src="review.author_details.avatar_path ? (review.author_details.avatar_path.startsWith('/http') ? review.author_details.avatar_path.substring(1) : 'https://image.tmdb.org/t/p/w45' + review.author_details.avatar_path) : ''" :alt="review.author" class="review-avatar" onerror="this.style.display='none'">
+                                <div>
+                                    <strong x-text="review.author_details.name || review.author_details.username || review.author"></strong>
+                                    <span class="review-date" x-text="new Date(review.created_at).toLocaleDateString()"></span>
+                                </div>
+                            </div>
+                            <div class="review-rating" x-show="review.author_details.rating"><i class="fas fa-star"></i> <span x-text="review.author_details.rating"></span></div>
+                        </div>
+                        <div class="review-content" x-html="review.content.length > 500 ? review.content.substring(0, 500) + '...' : review.content"></div>
+                    </div>
+                </template>
+                <div class="empty-state" x-show="!loading && reviews.length === 0"><p>No reviews yet</p></div>
+            </div>
+            <div class="pagination" x-show="totalPages > 1">
+                <button class="orbit-btn-secondary" @click="page > 1 && (page--, loadReviews())" :disabled="page <= 1"><i class="fas fa-chevron-left"></i> Prev</button>
+                <span class="page-info" x-text="'Page ' + page + ' of ' + totalPages"></span>
+                <button class="orbit-btn-secondary" @click="page < totalPages && (page++, loadReviews())" :disabled="page >= totalPages">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="orbit-footer">
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+    </footer>
+
+    <script>
+    function reviewSection(apiUrl) {
+        return {
+            reviews: [], page: 1, totalPages: 1, loading: false,
+            init() { this.loadReviews(); },
+            async loadReviews() {
+                this.loading = true;
+                try {
+                    const resp = await fetch(apiUrl + '?page=' + this.page);
+                    const data = await resp.json();
+                    if (resp.ok) {
+                        this.reviews = data.results || [];
+                        this.totalPages = data.total_pages || 1;
+                    } else {
+                        console.error('Reviews failed:', data.error);
+                        this.reviews = [];
+                    }
+                } catch (e) { console.error('Reviews fetch failed:', e); this.reviews = []; }
+                this.loading = false;
+            }
+        }
+    }
+    </script>
+</body>
+</html>
+{{end}}

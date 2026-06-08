@@ -99,22 +99,21 @@ definitions:
     type: object
 info:
   contact:
-    email: 0A2j9@example.com
     name: API Support
     url: http://www.swagger.io/support
-  description: This is a sample server celler server.
+  description: Content discovery API - Search for movies and TV series
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
-  version: "2.0"
+  title: OrbitSearch API
+  version: "1.0"
 paths:
-  /books/{query}:
+  /api/movies/search/{query}:
     get:
-      description: Get Books
+      description: Get Movies (JSON API)
       parameters:
-      - description: query
+      - description: Search query
         in: path
         name: query
         required: true
@@ -125,34 +124,17 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/jackett.Result'
-      summary: Get Books
-      tags:
-      - books
-  /movies/{query}:
-    get:
-      description: Get Movies
-      parameters:
-      - description: query
-        in: path
-        name: query
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/jackett.Result'
+            items:
+              $ref: '#/definitions/jackett.Result'
+            type: array
       summary: Get Movies
       tags:
       - movies
-  /tv/{query}:
+  /api/tv/search/{query}:
     get:
-      description: Get TV by query
+      description: Get TV Series (JSON API)
       parameters:
-      - description: query
+      - description: Search query
         in: path
         name: query
         required: true
@@ -163,8 +145,10 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/jackett.Result'
-      summary: Get TV
+            items:
+              $ref: '#/definitions/jackett.Result'
+            type: array
+      summary: Get TV Series
       tags:
       - tv
 swagger: "2.0"

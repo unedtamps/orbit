@@ -1,3 +1,4 @@
+{{define "index.html"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,16 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
 </head>
 <body>
     <div class="universe-bg"></div>
-    
+
     <nav class="top-nav">
         <div class="nav-brand">
-            <div class="logo">
-                <i class="fas fa-satellite"></i>
-                <span>OrbitSearch</span>
-            </div>
+            <a href="/" class="logo"><i class="fas fa-satellite"></i><span>OrbitSearch</span></a>
         </div>
         <div class="nav-links">
             <a href="/" class="active">Search</a>
@@ -33,75 +32,35 @@
                 <p class="tagline">Navigate the digital universe</p>
             </div>
         </div>
-
         <div class="search-container">
-            <form class="orbit-search-form" 
-                  hx-get="/search" 
-                  hx-target="#results" 
-                  hx-trigger="submit"
-                  hx-indicator="#loading">
-                
-                <div class="orbit-categories">
-                    <label class="orbit-radio">
-                        <input type="radio" name="category" value="movies" checked>
-                        <span class="orbit-btn">
-                            <i class="fas fa-film"></i>
-                            <span class="btn-label">Movies</span>
-                        </span>
-                    </label>
-                    <label class="orbit-radio">
-                        <input type="radio" name="category" value="tv">
-                        <span class="orbit-btn">
-                            <i class="fas fa-tv"></i>
-                            <span class="btn-label">Series</span>
-                        </span>
-                    </label>
-                    <label class="orbit-radio">
-                        <input type="radio" name="category" value="books">
-                        <span class="orbit-btn">
-                            <i class="fas fa-book-open"></i>
-                            <span class="btn-label">Books</span>
-                        </span>
-                    </label>
-                </div>
-
+            <form class="orbit-search-form"
+                  hx-get="/search"
+                  hx-target="#search-results"
+                  hx-swap="innerHTML"
+                  hx-indicator="#search-loading">
                 <div class="orbit-input-wrapper">
                     <div class="orbit-input-ring">
-                        <input type="text" 
-                               name="q" 
-                               class="orbit-input"
-                               placeholder="What are you looking for?" 
-                               autocomplete="off"
-                               required
-                               autofocus>
-                        <button type="submit" class="orbit-submit">
-                            <i class="fas fa-rocket"></i>
-                        </button>
+                        <input type="text" name="q" class="orbit-input" placeholder="Search movies, TV shows..." autocomplete="off" required autofocus>
+                        <button type="submit" class="orbit-submit"><i class="fas fa-rocket"></i></button>
                     </div>
                 </div>
             </form>
         </div>
 
-        <div class="loading-orbit" id="loading">
-            <div class="orbit-loader">
-                <div class="planet"></div>
-                <div class="satellite"></div>
-            </div>
+        <div id="search-loading" class="loading-orbit htmx-indicator">
+            <div class="orbit-loader"><div class="planet"></div><div class="satellite"></div></div>
             <p class="loading-text">Scanning the network...</p>
         </div>
 
-        <div class="results-orbit" id="results">
-            <!-- Results loaded via HTMX -->
-        </div>
+        <div id="search-results"></div>
 
         <div class="api-section">
             <div class="api-card">
                 <h3><i class="fas fa-code"></i> Developer API</h3>
                 <p>Access our search engine programmatically</p>
                 <div class="api-endpoints">
-                    <code>GET /movies/{query}</code>
-                    <code>GET /tv/{query}</code>
-                    <code>GET /books/{query}</code>
+                    <code>GET /api/movies/search/{query}</code>
+                    <code>GET /api/tv/search/{query}</code>
                 </div>
             </div>
         </div>
@@ -112,3 +71,4 @@
     </footer>
 </body>
 </html>
+{{end}}

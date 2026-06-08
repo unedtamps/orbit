@@ -1,0 +1,82 @@
+{{define "season_detail.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.TVName}} - Season {{.Season.SeasonNumber}} - OrbitSearch</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/alpinejs@3.14.9/dist/cdn.min.js" defer></script>
+</head>
+<body>
+    <div class="universe-bg"></div>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <a href="/" class="logo"><i class="fas fa-satellite"></i><span>OrbitSearch</span></a>
+        </div>
+        <div class="nav-links">
+            <a href="/">Search</a>
+            <a href="/apidocs/">API</a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="detail-header compact">
+            <div class="detail-info">
+                <a href="/tv/{{.TVID}}" class="back-link"><i class="fas fa-arrow-left"></i> Back to {{.TVName}}</a>
+                <h1 class="detail-title">{{.Season.Name}}</h1>
+                {{if .Season.Overview}}<p class="detail-overview">{{.Season.Overview}}</p>{{end}}
+            </div>
+        </div>
+
+        <div class="episodes-list">
+            {{range .Season.Episodes}}
+            <div class="episode-card" x-data="{open: false}">
+                <div class="episode-main" @click="open = !open">
+                    <div class="episode-still">
+                        {{if .StillPath}}<img src="https://image.tmdb.org/t/p/w300{{.StillPath}}" alt="{{.Name}}" loading="lazy">
+                        {{else}}<div class="episode-placeholder"><i class="fas fa-film"></i></div>{{end}}
+                    </div>
+                    <div class="episode-info">
+                        <div class="episode-header">
+                            <span class="episode-code">{{.SeasonEpisodeCode}}</span>
+                            <h3 class="episode-title">{{.Name}}</h3>
+                            <div class="episode-meta">
+                                {{if .AirDate}}<span><i class="fas fa-calendar"></i> {{.AirDate}}</span>{{end}}
+                                {{if .VoteAverage}}<span class="rating"><i class="fas fa-star"></i> {{printf "%.1f" .VoteAverage}}</span>{{end}}
+                                {{if .Runtime}}<span><i class="fas fa-clock"></i> {{.Runtime}}m</span>{{end}}
+                            </div>
+                        </div>
+                        {{if .Overview}}<p class="episode-overview">{{.Overview}}</p>{{end}}
+                    </div>
+                    <div class="episode-toggle">
+                        <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </div>
+                </div>
+                <div class="episode-magnets" x-show="open" x-transition>
+                    <button class="orbit-btn-primary"
+                            hx-get="/magnet/episode/{{$.TVID}}/s{{printf "%02d" .SeasonNumber}}/e{{printf "%02d" .EpisodeNumber}}?name={{$.TVName}}&season={{printf "%02d" .SeasonNumber}}&episode={{printf "%02d" .EpisodeNumber}}"
+                            hx-target="#magnet-{{.ID}}"
+                            hx-indicator="#magnet-load-{{.ID}}">
+                        <i class="fas fa-magnet"></i> Find Magnets
+                    </button>
+                    <div id="magnet-load-{{.ID}}" class="htmx-indicator">
+                        <p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Searching...</p>
+                    </div>
+                    <div id="magnet-{{.ID}}"></div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </main>
+
+    <footer class="orbit-footer">
+        <p><i class="fas fa-satellite-dish"></i> OrbitSearch &copy; 2025</p>
+    </footer>
+</body>
+</html>
+{{end}}

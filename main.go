@@ -2,19 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"os"
 
-	_ "jackettest/docs"
+	_ "github.com/unedtamps/orbit/docs"
+	"github.com/unedtamps/orbit/internal/config"
+	"github.com/unedtamps/orbit/internal/fetcher"
+	"github.com/unedtamps/orbit/internal/handler"
+	"github.com/unedtamps/orbit/internal/tmdb"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+
+	"github.com/webtor-io/go-jackett"
 )
 
 //	@title			OrbitSearch API
 //	@version		1.0
-//	@description	Content discovery API - Search for movies, TV series, and books
+//	@description	Content discovery API - Search for movies and TV series
 //	@termsOfService	http://swagger.io/terms/
 
 //	@contact.name	API Support
@@ -25,11 +31,25 @@ import (
 
 // @BasePath	/
 func main() {
-	handler, err := NewHandler()
-	hostURL := os.Getenv("HOST_URL")
+	cfg, err := config.Load()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
+
+	j, err := jackett.New(jackett.Settings{
+		ApiURL: cfg.APIURL,
+		ApiKey: cfg.APIKey,
+	})
+	if err != nil {
+		log.Fatalf("Failed to create Jackett client: %v", err)
+	}
+
+	f := fetcher.New(j, cfg.APIURL, cfg.APIKey)
+	tmdbClient := tmdb.NewClient(cfg.TMDBAPIKey)
+	tmpl := handler.LoadTemplates(cfg.TemplateGlob)
+	h := handler.New(f, tmdbClient, tmpl)
+	tmdbH := handler.NewTMDBHandler(tmdbClient)
+	magnetH := handler.NewMagnetHandler(f, tmpl)
 
 	r := chi.NewRouter()
 	r.Use(cors.Handler(cors.Options{
@@ -38,33 +58,42 @@ func main() {
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: false,
-		MaxAge:           300,
+		MaxAge:           cfg.CORSMaxAge,
 	}))
 
-	// Static files (CSS)
-	fileServer := http.FileServer(http.Dir("./static"))
+	fileServer := http.FileServer(http.Dir(cfg.StaticDir))
 	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 
-	// Web Interface Routes (HTMX)
-	r.Get("/", handler.Index)
-	r.Get("/search", handler.SearchWeb) // HTMX endpoint returns HTML fragment
+	r.Get("/", h.Index)
+	r.Get("/search", h.SearchPage)
+	r.Get("/movie/{id}", h.MovieDetailPage)
+	r.Get("/tv/{id}", h.TVDetailPage)
+	r.Get("/tv/{id}/season/{season}", h.SeasonPage)
 
-	// API Routes (JSON)
-	r.Get("/movies/{query}", handler.GetMovies)
-	r.Get("/books/{query}", handler.GetBooks)
-	r.Get("/tv/{query}", handler.GetTV)
+	r.Get("/api/search", tmdbH.Search)
+	r.Get("/api/movie/{id}", tmdbH.GetMovie)
+	r.Get("/api/tv/{id}", tmdbH.GetTV)
+	r.Get("/api/tv/{id}/season/{season}", tmdbH.GetSeason)
+	r.Get("/api/movie/{id}/reviews", tmdbH.GetMovieReviews)
+	r.Get("/api/tv/{id}/reviews", tmdbH.GetTVReviews)
 
-	r.Get("/dl/{tracker}", handler.DownloadProxy)
+	r.Get("/magnet/movie/{id}", magnetH.GetMovieMagnets)
+	r.Get("/magnet/episode/{id}/s{season}/e{episode}", magnetH.GetEpisodeMagnets)
 
-	// Swagger Documentation
+	r.Get("/api/movies/search/{query}", h.GetMovies)
+	r.Get("/api/tv/search/{query}", h.GetTV)
+	r.Get("/dl/{tracker}", h.DownloadProxy)
+
 	r.Get("/apidocs/*", httpSwagger.Handler(
-		httpSwagger.URL(fmt.Sprintf("%s/apidocs/doc.json", hostURL)),
+		httpSwagger.URL(fmt.Sprintf("%s/apidocs/doc.json", cfg.HostURL)),
 	))
 
-	port := ":9999"
-	fmt.Printf("OrbitSearch starting on http://localhost%s\n", port)
-	fmt.Printf("Web Interface: http://localhost%s/\n", port)
-	fmt.Printf("API Docs: http://localhost%s/apidocs/\n", port)
+	addr := ":" + cfg.Port
+	fmt.Printf("OrbitSearch starting on http://localhost%s\n", addr)
+	fmt.Printf("Web Interface: http://localhost%s/\n", addr)
+	fmt.Printf("API Docs: http://localhost%s/apidocs/\n", addr)
 
-	http.ListenAndServe(port, r)
+	if err := http.ListenAndServe(addr, r); err != nil {
+		log.Fatalf("Server failed: %v", err)
+	}
 }

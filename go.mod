@@ -1,4 +1,4 @@
-module jackettest
+module github.com/unedtamps/orbit
 
 go 1.25.4
 

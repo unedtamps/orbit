@@ -1,11 +1,10 @@
 # Torrent Indexer API Gateway
 
-This project provides a simple API gateway for searching content (movies, books, TV shows) through Jackett. It uses the `go-jackett` library to interact with a running Jackett instance and exposes a RESTful API.
+This project provides a simple API gateway for searching content (movies, TV shows) through Jackett. It uses the `go-jackett` library to interact with a running Jackett instance and exposes a RESTful API.
 
 ## Features
 
 *   Search for movies by query.
-*   Search for books by query.
 *   Search for TV shows by query.
 *   Integrated Swagger UI for API documentation.
 
@@ -75,17 +74,6 @@ The API provides the following endpoints:
 *   **Description:** Searches for movies based on the provided query.
 *   **Parameters:**
     *   `query` (path parameter, string, required): The movie title or keyword to search for.
-*   **Responses:**
-    *   `200 OK`: Returns a `jackett.Result` object containing search results.
-    *   `500 Internal Server Error`: If an error occurs during the search.
-
-### Search Books
-
-*   **URL:** `/books/{query}`
-*   **Method:** `GET`
-*   **Description:** Searches for books based on the provided query.
-*   **Parameters:**
-    *   `query` (path parameter, string, required): The book title or keyword to search for.
 *   **Responses:**
     *   `200 OK`: Returns a `jackett.Result` object containing search results.
     *   `500 Internal Server Error`: If an error occurs during the search.

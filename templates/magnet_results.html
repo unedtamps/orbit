@@ -1,0 +1,39 @@
+{{define "magnet_results.html"}}
+{{if .}}
+<div class="magnet-results-section">
+    <h3><i class="fas fa-magnet"></i> Magnet Links ({{len .}} results)</h3>
+    <div class="magnet-list">
+        {{range .}}
+        <div class="magnet-item">
+            <div class="magnet-info">
+                <div class="magnet-title" title="{{.Title}}">{{.Title}}</div>
+                <div class="magnet-meta">
+                    <span class="tracker"><i class="fas fa-satellite-dish"></i> {{.Tracker}}</span>
+                    {{if .Size}}<span class="size"><i class="fas fa-database"></i> {{formatSize .Size}}</span>{{end}}
+                    <span class="seeders"><i class="fas fa-arrow-up"></i> {{.Seeders}}</span>
+                    <span class="peers"><i class="fas fa-arrow-down"></i> {{sub .Peers .Seeders}}</span>
+                    {{if .PublishDate}}<span class="date"><i class="fas fa-calendar"></i> {{.PublishDate.Format "Jan 2, 2006"}}</span>{{end}}
+                </div>
+            </div>
+            <div class="magnet-actions">
+                {{if .MagnetURI}}
+                <a href="{{.MagnetURI}}" class="orbit-btn-primary magnetic">
+                    <i class="fas fa-magnet"></i> Magnet
+                </a>
+                {{end}}
+                {{if .Link}}
+                <a href="{{.Link}}" class="orbit-btn-secondary" target="_blank">
+                    <i class="fas fa-download"></i>
+                </a>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{else}}
+<div class="magnet-results-section">
+    <p class="no-results">No magnet links found</p>
+</div>
+{{end}}
+{{end}}

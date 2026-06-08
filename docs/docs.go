@@ -12,8 +12,7 @@ const docTemplate = `{
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "0A2j9@example.com"
+            "url": "http://www.swagger.io/support"
         },
         "license": {
             "name": "Apache 2.0",
@@ -24,38 +23,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/books/{query}": {
+        "/api/movies/search/{query}": {
             "get": {
-                "description": "Get Books",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "books"
-                ],
-                "summary": "Get Books",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "query",
-                        "name": "query",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/jackett.Result"
-                        }
-                    }
-                }
-            }
-        },
-        "/movies/{query}": {
-            "get": {
-                "description": "Get Movies",
+                "description": "Get Movies (JSON API)",
                 "produces": [
                     "application/json"
                 ],
@@ -66,7 +36,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "query",
+                        "description": "Search query",
                         "name": "query",
                         "in": "path",
                         "required": true
@@ -76,26 +46,29 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/jackett.Result"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jackett.Result"
+                            }
                         }
                     }
                 }
             }
         },
-        "/tv/{query}": {
+        "/api/tv/search/{query}": {
             "get": {
-                "description": "Get TV by query",
+                "description": "Get TV Series (JSON API)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "tv"
                 ],
-                "summary": "Get TV",
+                "summary": "Get TV Series",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "query",
+                        "description": "Search query",
                         "name": "query",
                         "in": "path",
                         "required": true
@@ -105,7 +78,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/jackett.Result"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jackett.Result"
+                            }
                         }
                     }
                 }
@@ -264,12 +240,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "2.0",
+	Version:          "1.0",
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Swagger Example API",
-	Description:      "This is a sample server celler server.",
+	Title:            "OrbitSearch API",
+	Description:      "Content discovery API - Search for movies and TV series",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
