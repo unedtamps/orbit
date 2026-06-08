@@ -9,8 +9,7 @@
         <form class="orbit-search-form" action="/search" method="GET"
               hx-get="/search"
               hx-target="#search-results"
-              hx-swap="innerHTML"
-              hx-indicator="#search-loading">
+              hx-swap="innerHTML">
             <div class="orbit-input-wrapper">
                 <div class="orbit-input-ring">
                     <input type="text" name="q" class="orbit-input" value="{{.Query}}" placeholder="Search movies, TV shows..." autocomplete="off" required autofocus>

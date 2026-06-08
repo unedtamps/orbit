@@ -1426,3 +1426,55 @@ body {
     .magnet-item { flex-direction: column; gap: 12px; align-items: flex-start; }
     .magnet-actions { margin-left: 0; }
 }
+
+/* Search Overlay */
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.search-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.search-overlay .orbit-loader {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 30px;
+}
+
+.search-overlay .planet {
+    width: 40px;
+    height: 40px;
+}
+
+.search-overlay .satellite {
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    transform-origin: 50px 0;
+}
+
+.search-overlay .overlay-text {
+    font-size: 1.1rem;
+    letter-spacing: 0.25em;
+    color: var(--text-secondary);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.search-overlay .overlay-subtext {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}

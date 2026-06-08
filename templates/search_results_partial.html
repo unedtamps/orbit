@@ -1,14 +1,9 @@
 {{define "search_results_partial.html"}}
-<div x-data="searchPage()" x-init="init()">
+<div x-data="searchPage()" x-init="init()" data-query="{{.Query}}">
     <div class="filter-tabs">
         <button class="tab-btn" :class="{'active': filter === 'all'}" @click="setFilter('all')">All</button>
         <button class="tab-btn" :class="{'active': filter === 'movie'}" @click="setFilter('movie')"><i class="fas fa-film"></i> Movies</button>
         <button class="tab-btn" :class="{'active': filter === 'tv'}" @click="setFilter('tv')"><i class="fas fa-tv"></i> TV Shows</button>
-    </div>
-
-    <div id="search-loading" class="loading-orbit htmx-indicator">
-        <div class="orbit-loader"><div class="planet"></div><div class="satellite"></div></div>
-        <p class="loading-text">Scanning the network...</p>
     </div>
 
     <div class="orbit-grid results-grid" x-show="!loading" x-transition>
@@ -43,50 +38,4 @@
         <button class="orbit-btn-secondary" @click="goPage(currentPage + 1)" :disabled="currentPage >= totalPages">Next <i class="fas fa-chevron-right"></i></button>
     </div>
 </div>
-
-<script>
-function searchPage() {
-    return {
-        query: '{{.Query}}',
-        filter: 'all',
-        results: [],
-        filteredResults: [],
-        loading: false,
-        errorMsg: '',
-        currentPage: 1,
-        totalPages: 1,
-        async init() { await this.search(1); },
-        async search(page) {
-            this.loading = true;
-            this.errorMsg = '';
-            try {
-                const resp = await fetch('/api/search?q=' + encodeURIComponent(this.query) + '&page=' + page);
-                const data = await resp.json();
-                if (!resp.ok) {
-                    this.errorMsg = data.error || 'Search failed';
-                    this.results = [];
-                    this.filteredResults = [];
-                    this.loading = false;
-                    return;
-                }
-                this.results = (data.results || []).filter(r => r.media_type === 'movie' || r.media_type === 'tv');
-                this.currentPage = data.page || 1;
-                this.totalPages = data.total_pages || 1;
-                this.applyFilter();
-            } catch (e) {
-                console.error('Search failed:', e);
-                this.errorMsg = 'Failed to connect to server';
-                this.results = [];
-                this.filteredResults = [];
-            }
-            this.loading = false;
-        },
-        applyFilter() {
-            this.filteredResults = this.filter === 'all' ? this.results : this.results.filter(r => r.media_type === this.filter);
-        },
-        setFilter(f) { this.filter = f; this.applyFilter(); },
-        goPage(page) { if (page >= 1 && page <= this.totalPages) this.search(page); }
-    }
-}
-</script>
 {{end}}
